@@ -2,7 +2,7 @@
 @source "../src";
 @import "tw-animate-css";
 
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..600&family=Inter+Tight:wght@300;400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..600&family=Inter+Tight:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap");
 
 @custom-variant dark (&:is(.dark *));
 
@@ -38,47 +38,53 @@
   --color-ring: var(--ring);
 
   --color-cream: var(--cream);
+  --color-shell: var(--shell);
   --color-forest: var(--forest);
   --color-forest-deep: var(--forest-deep);
   --color-blush: var(--blush);
   --color-clay: var(--clay);
   --color-ink: var(--ink);
+  --color-loam: var(--loam);
+  --color-sage: var(--sage);
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 0.625rem;
 
-  /* Brand */
-  --cream: oklch(0.965 0.018 95);
-  --forest: oklch(0.32 0.04 150);
-  --forest-deep: oklch(0.245 0.035 150);
-  --blush: oklch(0.86 0.045 25);
-  --clay: oklch(0.7 0.07 45);
-  --ink: oklch(0.22 0.02 80);
+  /* Brand — warm garden editorial */
+  --cream: oklch(0.96 0.014 78);          /* warm paper / bone */
+  --shell: oklch(0.985 0.008 75);         /* card surface, lighter than cream */
+  --ink: oklch(0.215 0.018 55);           /* warm near-black text */
+  --loam: oklch(0.235 0.02 60);           /* deep warm earth, dramatic surfaces */
+  --sage: oklch(0.55 0.04 135);           /* muted olive accent, never dominant */
+  --forest: oklch(0.36 0.035 140);        /* deep mossy green, used sparingly */
+  --forest-deep: oklch(0.235 0.02 60);    /* alias to loam to keep tokens stable */
+  --clay: oklch(0.6 0.12 45);             /* terracotta — primary warm accent */
+  --blush: oklch(0.88 0.04 25);           /* soft rose */
 
-  /* Semantic — cream canvas, deep ink text */
-  --background: oklch(0.965 0.018 95);
-  --foreground: oklch(0.22 0.02 80);
-  --card: oklch(0.985 0.012 95);
-  --card-foreground: oklch(0.22 0.02 80);
-  --popover: oklch(0.985 0.012 95);
-  --popover-foreground: oklch(0.22 0.02 80);
-  --primary: oklch(0.32 0.04 150);
-  --primary-foreground: oklch(0.965 0.018 95);
-  --secondary: oklch(0.92 0.02 90);
-  --secondary-foreground: oklch(0.22 0.02 80);
-  --muted: oklch(0.93 0.015 90);
-  --muted-foreground: oklch(0.45 0.02 80);
-  --accent: oklch(0.86 0.045 25);
-  --accent-foreground: oklch(0.22 0.02 80);
+  /* Semantic — bone canvas, warm ink text */
+  --background: oklch(0.96 0.014 78);
+  --foreground: oklch(0.215 0.018 55);
+  --card: oklch(0.985 0.008 75);
+  --card-foreground: oklch(0.215 0.018 55);
+  --popover: oklch(0.985 0.008 75);
+  --popover-foreground: oklch(0.215 0.018 55);
+  --primary: oklch(0.235 0.02 60);
+  --primary-foreground: oklch(0.96 0.014 78);
+  --secondary: oklch(0.92 0.014 75);
+  --secondary-foreground: oklch(0.215 0.018 55);
+  --muted: oklch(0.93 0.012 75);
+  --muted-foreground: oklch(0.46 0.018 60);
+  --accent: oklch(0.6 0.12 45);
+  --accent-foreground: oklch(0.96 0.014 78);
   --destructive: oklch(0.55 0.2 25);
-  --destructive-foreground: oklch(0.985 0.012 95);
-  --border: oklch(0.88 0.015 90);
-  --input: oklch(0.88 0.015 90);
-  --ring: oklch(0.32 0.04 150);
+  --destructive-foreground: oklch(0.985 0.008 75);
+  --border: oklch(0.88 0.014 70);
+  --input: oklch(0.88 0.014 70);
+  --ring: oklch(0.6 0.12 45);
 
-  --shadow-soft: 0 1px 2px oklch(0.22 0.02 80 / 0.04), 0 8px 24px oklch(0.22 0.02 80 / 0.06);
-  --shadow-lift: 0 2px 4px oklch(0.22 0.02 80 / 0.05), 0 18px 40px oklch(0.22 0.02 80 / 0.1);
+  --shadow-soft: 0 1px 2px oklch(0.215 0.018 55 / 0.04), 0 12px 28px oklch(0.215 0.018 55 / 0.06);
+  --shadow-lift: 0 2px 6px oklch(0.215 0.018 55 / 0.06), 0 22px 48px oklch(0.215 0.018 55 / 0.12);
 }
 
 .dark {
@@ -126,6 +132,7 @@
 
 @layer utilities {
   .font-display { font-family: var(--font-display); }
+  .font-serif-italic { font-family: "Cormorant Garamond", "Fraunces", serif; font-style: italic; font-weight: 500; }
   .font-sans { font-family: var(--font-sans); }
   .container-page {
     width: 100%;
@@ -143,5 +150,20 @@
   }
   @keyframes reveal {
     to { opacity: 1; transform: none; }
+  }
+  /* Subtle warm grain overlay for editorial depth */
+  .grain::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.06;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.13 0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  .hairline { border-color: color-mix(in oklab, var(--ink) 14%, transparent); }
+  .divider-rule {
+    height: 1px;
+    background: linear-gradient(to right, transparent, color-mix(in oklab, var(--ink) 18%, transparent), transparent);
   }
 }
