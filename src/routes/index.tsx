@@ -107,14 +107,15 @@ function HomePage() {
       {/* COLLECTIONS */}
       <section className="bg-cream">
         <div className="container-page grid gap-1 pb-24 md:grid-cols-3 md:gap-8">
-          {[
-            { to: "/shop", label: "Fresh bouquets", img: featured[0]?.image, sub: "Made to order, by hand." },
-            { to: "/shop", label: "Preserved", img: products.find((p) => p.slug === "eternal-love")?.image, sub: "A keepsake that lasts." },
-            { to: "/services", label: "Weddings", img: servicesWedding, sub: "Florals for the day itself." },
-          ].map((c) => (
+          {([
+            { to: "/shop", search: { category: "fresh" as const, occasion: "all" as const }, label: "Fresh bouquets", img: featured[0]?.image, sub: "Made to order, by hand." },
+            { to: "/shop", search: { category: "preserved" as const, occasion: "all" as const }, label: "Preserved", img: products.find((p) => p.slug === "eternal-love")?.image, sub: "A keepsake that lasts." },
+            { to: "/services", search: undefined, label: "Weddings", img: servicesWedding, sub: "Florals for the day itself." },
+          ] as const).map((c) => (
             <Link
               key={c.label}
               to={c.to}
+              search={c.search as never}
               className="group relative block overflow-hidden rounded-3xl"
             >
               <img
