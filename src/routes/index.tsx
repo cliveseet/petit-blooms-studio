@@ -39,55 +39,63 @@ function HomePage() {
     .filter(Boolean);
 
   return (
-    <div>
-      {/* HERO */}
-      <section className="relative overflow-hidden bg-forest text-cream">
+    <div className="bg-cream">
+      {/* HERO — editorial cream with dramatic image */}
+      <section className="relative overflow-hidden">
         <div className="container-page grid min-h-[88vh] grid-cols-1 items-center gap-12 py-16 md:grid-cols-12 md:py-24">
           <div className="md:col-span-5 reveal">
-            <p className="text-xs uppercase tracking-[0.3em] text-cream/60">
+            <p className="text-[11px] uppercase tracking-[0.34em] text-clay">
               Singapore · Build-to-order
             </p>
-            <h1 className="mt-6 font-display text-5xl leading-[1.05] text-cream md:text-7xl">
-              Where flowers speak the language of love.
+            <h1 className="mt-6 font-display text-5xl leading-[1.02] text-loam md:text-7xl">
+              Where flowers
+              <span className="block font-serif-italic text-clay">speak the language</span>
+              of love.
             </h1>
-            <p className="mt-6 max-w-md text-cream/75">
-              Every bouquet is co-created — your story, your palette, shaped by
-              a WSQ-trained florist's hand. No two are alike.
+            <p className="mt-7 max-w-md text-ink/75">
+              Every bouquet is co-created — your story, your palette, shaped
+              by a WSQ-trained florist's hand. No two are alike.
             </p>
-            <div className="mt-10 flex flex-wrap items-center gap-4">
+            <div className="mt-10 flex flex-wrap items-center gap-5">
               <Link
                 to="/shop"
-                className="inline-flex items-center gap-2 rounded-full bg-cream px-7 py-3.5 text-sm text-forest-deep transition-transform hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 rounded-md bg-loam px-6 py-3.5 text-xs uppercase tracking-[0.22em] text-cream transition-all hover:-translate-y-0.5 hover:bg-ink"
               >
                 Shop bouquets <ArrowUpRight className="size-4" />
               </Link>
               <Link
                 to="/about"
-                className="inline-flex items-center gap-2 text-sm text-cream/85 underline underline-offset-4 hover:text-cream"
+                className="text-xs uppercase tracking-[0.28em] text-loam underline underline-offset-[6px] decoration-clay/60 hover:decoration-clay"
               >
                 Our story
               </Link>
             </div>
           </div>
           <div className="relative md:col-span-7">
-            <div className="absolute -left-6 -top-6 hidden h-full w-full rounded-[2rem] border border-cream/15 md:block" />
+            <div className="absolute -left-5 -top-5 hidden h-full w-full rounded-[2rem] border hairline md:block" />
             <img
               src={heroBouquet}
               alt="Hand-tied bouquet of garden roses, ranunculus and eucalyptus"
-              className="relative h-[60vh] w-full rounded-[2rem] object-cover shadow-2xl md:h-[78vh]"
+              className="relative h-[60vh] w-full rounded-[2rem] object-cover shadow-[var(--shadow-lift)] md:h-[78vh]"
               width={1600}
               height={1200}
             />
+            <p className="absolute bottom-5 left-5 hidden rounded-full bg-cream/85 px-4 py-1.5 text-[10px] uppercase tracking-[0.28em] text-loam backdrop-blur md:block">
+              No. 01 — Petals & Promises
+            </p>
           </div>
         </div>
       </section>
 
+      <div className="container-page"><div className="divider-rule" /></div>
+
       {/* INTRO */}
-      <section className="container-page grid gap-10 py-24 md:grid-cols-12 md:py-32">
+      <section className="container-page grid gap-10 py-24 md:grid-cols-12 md:py-28">
         <div className="md:col-span-5">
-          <p className="text-xs uppercase tracking-[0.3em] text-clay">Our craft</p>
-          <h2 className="mt-4 font-display text-4xl leading-tight text-forest-deep md:text-5xl">
-            Florals shaped by your story.
+          <p className="text-[11px] uppercase tracking-[0.34em] text-clay">Our craft</p>
+          <h2 className="mt-4 font-display text-4xl leading-tight text-loam md:text-5xl">
+            Florals shaped
+            <span className="block font-serif-italic text-clay">by your story.</span>
           </h2>
         </div>
         <div className="space-y-5 text-base leading-relaxed text-ink/80 md:col-span-6 md:col-start-7">
@@ -104,57 +112,63 @@ function HomePage() {
         </div>
       </section>
 
-      {/* COLLECTIONS */}
-      <section className="bg-cream">
-        <div className="container-page grid gap-1 pb-24 md:grid-cols-3 md:gap-8">
+      {/* COLLECTIONS — editorial trio */}
+      <section className="container-page">
+        <div className="grid gap-4 pb-24 md:grid-cols-3 md:gap-6">
           {([
-            { to: "/shop", search: { category: "fresh" as const, occasion: "all" as const }, label: "Fresh bouquets", img: featured[0]?.image, sub: "Made to order, by hand." },
-            { to: "/shop", search: { category: "preserved" as const, occasion: "all" as const }, label: "Preserved", img: products.find((p) => p.slug === "eternal-love")?.image, sub: "A keepsake that lasts." },
-            { to: "/services", search: undefined, label: "Weddings", img: servicesWedding, sub: "Florals for the day itself." },
+            { to: "/shop", search: { category: "fresh" as const, occasion: "all" as const }, label: "Fresh", num: "01", img: featured[0]?.image, sub: "Made to order, by hand." },
+            { to: "/shop", search: { category: "preserved" as const, occasion: "all" as const }, label: "Preserved", num: "02", img: products.find((p) => p.slug === "eternal-love")?.image, sub: "A keepsake that lasts." },
+            { to: "/services", search: undefined, label: "Weddings", num: "03", img: servicesWedding, sub: "Florals for the day itself." },
           ] as const).map((c) => (
             <Link
               key={c.label}
               to={c.to}
               search={c.search as never}
-              className="group relative block overflow-hidden rounded-3xl"
+              className="group relative block overflow-hidden rounded-[1.75rem]"
             >
               <img
                 src={c.img}
                 alt={c.label}
                 loading="lazy"
-                className="h-[60vh] w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                className="h-[68vh] w-full object-cover transition-transform duration-[900ms] group-hover:scale-[1.04]"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-forest-deep/80 via-forest-deep/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-loam/85 via-loam/15 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-7">
-                <p className="text-xs uppercase tracking-[0.25em] text-cream/70">Collection</p>
-                <h3 className="mt-2 font-display text-3xl text-cream">{c.label}</h3>
-                <p className="mt-2 max-w-xs text-sm text-cream/80">{c.sub}</p>
+                <p className="font-display text-xs tracking-[0.34em] text-cream/70">
+                  N° {c.num}
+                </p>
+                <h3 className="mt-1 font-display text-3xl text-cream">
+                  {c.label}
+                  <span className="font-serif-italic text-blush"> bouquets</span>
+                </h3>
+                <p className="mt-2 max-w-xs text-sm text-cream/85">{c.sub}</p>
               </div>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* PORTFOLIO */}
-      <section className="bg-forest py-24 text-cream md:py-32">
+      {/* PORTFOLIO — single dramatic dark moment (warm loam, not green) */}
+      <section className="bg-loam py-24 text-cream md:py-32">
         <div className="container-page">
           <div className="flex items-end justify-between gap-6">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-cream/60">Portfolio</p>
+              <p className="text-[11px] uppercase tracking-[0.34em] text-clay">Portfolio</p>
               <h2 className="mt-3 font-display text-4xl text-cream md:text-5xl">
-                A few of our favourites.
+                A few of our
+                <span className="font-serif-italic text-blush"> favourites</span>.
               </h2>
             </div>
             <Link
               to="/shop"
-              className="hidden items-center gap-2 text-sm text-cream/85 underline underline-offset-4 hover:text-cream md:inline-flex"
+              className="hidden items-center gap-2 text-[11px] uppercase tracking-[0.28em] text-cream/75 underline underline-offset-[6px] decoration-clay/70 hover:text-cream md:inline-flex"
             >
-              See the shop <ArrowUpRight className="size-4" />
+              See the shop <ArrowUpRight className="size-3.5" />
             </Link>
           </div>
 
           <div className="mt-12 -mx-5 flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-4 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 lg:grid-cols-6">
-            {featured.map((p) => (
+            {featured.map((p, i) => (
               <Link
                 key={p.slug}
                 to="/shop/$slug"
@@ -166,10 +180,13 @@ function HomePage() {
                     src={p.image}
                     alt={p.name}
                     loading="lazy"
-                    className="aspect-[3/4] w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="aspect-[3/4] w-full object-cover transition-transform duration-[900ms] group-hover:scale-[1.05]"
                   />
                 </div>
-                <p className="mt-3 font-display text-sm text-cream/90">{p.name}</p>
+                <p className="mt-3 font-display text-xs tracking-[0.28em] text-cream/55">
+                  N° 0{i + 1}
+                </p>
+                <p className="mt-1 font-display text-sm text-cream/95">{p.name}</p>
               </Link>
             ))}
           </div>
@@ -178,7 +195,7 @@ function HomePage() {
 
       {/* SERVICES TEASER */}
       <section className="container-page grid gap-10 py-24 md:grid-cols-12 md:py-32">
-        <div className="overflow-hidden rounded-3xl md:col-span-6">
+        <div className="overflow-hidden rounded-[1.75rem] md:col-span-6">
           <img
             src={servicesWedding}
             alt="Bridal bouquet on a chair beside a chapel window"
@@ -187,20 +204,21 @@ function HomePage() {
           />
         </div>
         <div className="flex flex-col justify-center md:col-span-5 md:col-start-8">
-          <p className="text-xs uppercase tracking-[0.3em] text-clay">Weddings</p>
-          <h2 className="mt-4 font-display text-4xl text-forest-deep md:text-5xl">
-            Intimate Love — wedding package.
+          <p className="text-[11px] uppercase tracking-[0.34em] text-clay">Weddings</p>
+          <h2 className="mt-4 font-display text-4xl text-loam md:text-5xl">
+            Intimate Love
+            <span className="block font-serif-italic text-clay">— wedding package.</span>
           </h2>
-          <p className="mt-5 text-ink/80">
+          <p className="mt-6 text-ink/80">
             Looking for your big day's florals? Our Intimate Love wedding
             package is available from SGD 300, including the bride's bouquet,
             groom's boutonnière and parents' boutonnières. Other additions
             and urgent requests are also available.
           </p>
-          <div className="mt-8">
+          <div className="mt-9">
             <Link
               to="/services"
-              className="inline-flex items-center gap-2 rounded-full bg-forest px-6 py-3 text-sm text-cream hover:bg-forest-deep"
+              className="inline-flex items-center gap-2 rounded-md bg-loam px-6 py-3.5 text-xs uppercase tracking-[0.22em] text-cream hover:bg-ink"
             >
               Explore wedding florals <ArrowUpRight className="size-4" />
             </Link>
@@ -208,17 +226,18 @@ function HomePage() {
         </div>
       </section>
 
-      {/* VALUES */}
-      <section className="border-t border-forest/10 bg-cream">
-        <div className="container-page grid gap-10 py-20 md:grid-cols-3 md:py-24">
+      {/* VALUES — quiet editorial */}
+      <section className="border-t hairline">
+        <div className="container-page grid gap-12 py-20 md:grid-cols-3 md:py-24">
           {[
-            { h: "Made to order", p: "Each bouquet is built fresh, the day before or the day of." },
-            { h: "WSQ-trained", p: "Continually honing the craft so every arrangement feels considered." },
-            { h: "Giving back", p: "Excess stock goes to hospices and donation drives, not the bin." },
+            { n: "I", h: "Made to order", p: "Each bouquet is built fresh, the day before or the day of." },
+            { n: "II", h: "WSQ-trained", p: "Continually honing the craft so every arrangement feels considered." },
+            { n: "III", h: "Giving back", p: "Excess stock goes to hospices and donation drives, not the bin." },
           ].map((v) => (
             <div key={v.h}>
-              <h3 className="font-display text-2xl text-forest-deep">{v.h}</h3>
-              <p className="mt-3 text-sm text-ink/75">{v.p}</p>
+              <p className="font-display text-3xl text-clay">{v.n}.</p>
+              <h3 className="mt-3 font-display text-2xl text-loam">{v.h}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-ink/75">{v.p}</p>
             </div>
           ))}
         </div>
