@@ -26,7 +26,30 @@ export const Route = createFileRoute("/services")({
 function ServicesPage() {
   return (
     <div>
-      <section className="bg-cream">
+      <section className="bg-forest-deep text-cream">
+        <div className="container-page grid gap-10 py-20 md:grid-cols-12 md:gap-16 md:py-28">
+          <div className="md:col-span-5">
+            <p className="text-xs uppercase tracking-[0.3em] text-cream/60">Services</p>
+            <h1 className="mt-4 font-display text-5xl text-cream md:text-6xl">
+              Florals for the moments that matter.
+            </h1>
+            <p className="mt-6 max-w-md text-cream/75">
+              From bridal bouquets to last-minute pick-ups — designed,
+              tied and delivered with care.
+            </p>
+          </div>
+          <div className="md:col-span-7">
+            <img
+              src={servicesWedding}
+              alt="Bridal bouquet on a chair beside a chapel window at golden hour"
+              loading="lazy"
+              className="aspect-[4/3] w-full rounded-3xl object-cover shadow-2xl"
+            />
+          </div>
+        </div>
+      </section>
+
+      <SkipHero />
         <div className="container-page grid gap-10 py-20 md:grid-cols-12 md:gap-16 md:py-28">
           <div className="md:col-span-5">
             <p className="text-xs uppercase tracking-[0.3em] text-clay">Services</p>
