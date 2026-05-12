@@ -91,7 +91,7 @@ function ShopPage() {
                 <li key={c.id}>
                   <button
                     onClick={() =>
-                      navigate({ search: (p) => ({ ...p, category: c.id }) })
+                      navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, category: c.id }) })
                     }
                     className={cn(
                       "text-sm text-ink/70 hover:text-forest-deep",
@@ -112,7 +112,7 @@ function ShopPage() {
                 <li key={o.id}>
                   <button
                     onClick={() =>
-                      navigate({ search: (p) => ({ ...p, occasion: o.id }) })
+                      navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, occasion: o.id }) })
                     }
                     className={cn(
                       "text-sm text-ink/70 hover:text-forest-deep",
