@@ -64,30 +64,31 @@ function ShopPage() {
   ];
 
   return (
-    <div>
+    <div className="bg-cream">
       {/* Banner */}
-      <section className="bg-cream">
-        <div className="container-page grid gap-6 py-20 text-center md:py-28">
-          <p className="text-xs uppercase tracking-[0.3em] text-clay">The shop</p>
-          <h1 className="font-display text-5xl text-forest-deep md:text-6xl">
-            With love, petit blooms.
-          </h1>
-          <p className="mx-auto max-w-xl text-ink/75">
-            Choose a piece — then make it yours. Sizes, colours and
-            requests are set on the next page.
-          </p>
-        </div>
+      <section className="container-page py-20 text-center md:py-28">
+        <p className="text-[11px] uppercase tracking-[0.34em] text-clay">The shop</p>
+        <h1 className="mt-5 font-display text-5xl leading-[1.02] text-loam md:text-7xl">
+          With love,
+          <span className="font-serif-italic text-clay"> petit blooms.</span>
+        </h1>
+        <p className="mx-auto mt-6 max-w-xl text-ink/75">
+          Choose a piece — then make it yours. Sizes, colours and
+          requests are set on the next page.
+        </p>
       </section>
 
+      <div className="container-page"><div className="divider-rule" /></div>
+
       {/* Filters + grid */}
-      <section className="container-page grid gap-12 pb-24 md:grid-cols-12 md:gap-10">
+      <section className="container-page grid gap-12 py-16 md:grid-cols-12 md:gap-12 md:pb-28">
         <aside className="md:col-span-3">
-          <div className="md:sticky md:top-28 space-y-8">
+          <div className="md:sticky md:top-28 space-y-10">
             <div>
-              <p className="text-xs font-medium uppercase tracking-[0.25em] text-forest-deep/80">
+              <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-clay">
                 Category
               </p>
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 {categories.map((c) => {
                   const active = category === c.id;
                   return (
@@ -98,10 +99,10 @@ function ShopPage() {
                         navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, category: c.id }) })
                       }
                       className={cn(
-                        "rounded-full border px-4 py-1.5 text-sm transition-colors",
+                        "rounded-md border px-3.5 py-2 text-xs uppercase tracking-[0.18em] transition-all",
                         active
-                          ? "border-forest-deep bg-forest text-cream"
-                          : "border-forest/25 text-ink/75 hover:border-forest/60 hover:text-forest-deep"
+                          ? "border-loam bg-loam text-cream"
+                          : "border-ink/15 bg-shell text-ink/70 hover:border-clay/50 hover:text-loam"
                       )}
                     >
                       {c.label}
@@ -112,10 +113,10 @@ function ShopPage() {
             </div>
 
             <div>
-              <p className="text-xs font-medium uppercase tracking-[0.25em] text-forest-deep/80">
+              <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-clay">
                 Occasion
               </p>
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 {occasions.map((o) => {
                   const active = occasion === o.id;
                   return (
@@ -126,10 +127,10 @@ function ShopPage() {
                         navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, occasion: o.id }) })
                       }
                       className={cn(
-                        "rounded-full border px-4 py-1.5 text-sm transition-colors",
+                        "rounded-md border px-3.5 py-2 text-xs uppercase tracking-[0.18em] transition-all",
                         active
-                          ? "border-forest-deep bg-forest text-cream"
-                          : "border-forest/25 text-ink/75 hover:border-forest/60 hover:text-forest-deep"
+                          ? "border-loam bg-loam text-cream"
+                          : "border-ink/15 bg-shell text-ink/70 hover:border-clay/50 hover:text-loam"
                       )}
                     >
                       {o.label}
@@ -140,7 +141,8 @@ function ShopPage() {
             </div>
 
             <p className="text-xs text-muted-foreground">
-              {filtered.length} {filtered.length === 1 ? "piece" : "pieces"}
+              {filtered.length} {filtered.length === 1 ? "piece" : "pieces"} ·
+              <span className="ml-1 text-clay">curated weekly</span>
             </p>
           </div>
         </aside>
@@ -151,35 +153,38 @@ function ShopPage() {
               No pieces match these filters.
             </p>
           ) : (
-            <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((p) => (
+            <div className="grid gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((p, i) => (
                 <Link
                   key={p.slug}
                   to="/shop/$slug"
                   params={{ slug: p.slug }}
                   className="group block focus:outline-none"
                 >
-                  <div className="relative overflow-hidden rounded-2xl bg-secondary">
+                  <div className="relative overflow-hidden rounded-2xl bg-shell">
                     <img
                       src={p.image}
                       alt={p.name}
                       loading="lazy"
-                      className="aspect-[4/5] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                      className="aspect-[4/5] w-full object-cover transition-transform duration-[900ms] group-hover:scale-[1.04]"
                     />
-                    <span className="absolute inset-x-3 bottom-3 rounded-full bg-cream/95 py-2 text-center text-xs font-medium uppercase tracking-[0.2em] text-forest-deep opacity-0 backdrop-blur transition-opacity group-hover:opacity-100">
+                    <span className="absolute left-3 top-3 rounded-full bg-cream/85 px-2.5 py-1 font-display text-[10px] tracking-[0.28em] text-loam backdrop-blur">
+                      N° {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="absolute inset-x-3 bottom-3 rounded-md bg-loam/90 py-2.5 text-center text-[10px] font-medium uppercase tracking-[0.28em] text-cream opacity-0 backdrop-blur transition-opacity group-hover:opacity-100">
                       View &amp; order
                     </span>
                   </div>
                   <div className="mt-4 flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-display text-lg leading-snug text-forest-deep group-hover:underline underline-offset-4 decoration-forest/40">
+                      <p className="font-display text-lg leading-snug text-loam transition-colors group-hover:text-clay">
                         {p.name}
                       </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
                         {categoryLabels[p.category]}
                       </p>
                     </div>
-                    <p className="text-sm tabular-nums text-ink/80">
+                    <p className="font-display text-sm tabular-nums text-ink/80">
                       {p.fromPrice ? "from " : ""}SGD {p.basePrice.toFixed(2)}
                     </p>
                   </div>

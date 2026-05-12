@@ -17,7 +17,7 @@ export function Header() {
   const [menu, setMenu] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-forest/10 bg-forest text-cream/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b hairline bg-cream/85 text-ink backdrop-blur-md">
       <div className="container-page flex h-16 items-center justify-between md:h-20">
         <button
           className="md:hidden"
@@ -27,13 +27,13 @@ export function Header() {
           {menu ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
 
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-9 md:flex">
           {links.slice(0, 3).map((l) => (
             <Link
               key={l.to}
               to={l.to}
-              className="text-sm tracking-wide text-cream/80 transition-colors hover:text-cream"
-              activeProps={{ className: "text-cream underline underline-offset-8 decoration-blush/70" }}
+              className="text-[11px] uppercase tracking-[0.28em] text-ink/65 transition-colors hover:text-loam"
+              activeProps={{ className: "text-loam" }}
               activeOptions={{ exact: l.to === "/" }}
             >
               {l.label}
@@ -41,18 +41,21 @@ export function Header() {
           ))}
         </nav>
 
-        <Link to="/" className="font-display text-xl tracking-tight md:text-2xl">
-          petit blooms
+        <Link
+          to="/"
+          className="font-display text-xl tracking-tight text-loam md:text-[22px]"
+        >
+          petit <span className="font-serif-italic text-clay">blooms</span>
         </Link>
 
-        <div className="flex items-center gap-6">
-          <nav className="hidden items-center gap-8 md:flex">
+        <div className="flex items-center gap-7">
+          <nav className="hidden items-center gap-9 md:flex">
             {links.slice(3).map((l) => (
               <Link
                 key={l.to}
                 to={l.to}
-                className="text-sm tracking-wide text-cream/80 transition-colors hover:text-cream"
-                activeProps={{ className: "text-cream underline underline-offset-8 decoration-blush/70" }}
+                className="text-[11px] uppercase tracking-[0.28em] text-ink/65 transition-colors hover:text-loam"
+                activeProps={{ className: "text-loam" }}
               >
                 {l.label}
               </Link>
@@ -60,11 +63,11 @@ export function Header() {
           </nav>
           <button
             onClick={() => setOpen(true)}
-            className="flex items-center gap-2 text-sm text-cream/90 transition-colors hover:text-cream"
+            className="flex items-center gap-2 text-[11px] uppercase tracking-[0.28em] text-ink/75 transition-colors hover:text-loam"
             aria-label="Open cart"
           >
             <ShoppingBag className="size-4" />
-            <span className="tabular-nums">Bag ({count})</span>
+            <span className="tabular-nums">Bag · {count}</span>
           </button>
         </div>
       </div>
@@ -83,8 +86,8 @@ export function Header() {
                 key={l.to}
                 to={l.to}
                 onClick={() => setMenu(false)}
-                className="border-b border-cream/10 py-3 text-base text-cream/90"
-                activeProps={{ className: "text-cream" }}
+                className="border-b hairline py-3 text-base text-ink/85"
+                activeProps={{ className: "text-loam" }}
               >
                 {l.label}
               </Link>

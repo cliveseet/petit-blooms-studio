@@ -5,13 +5,15 @@ import {
   productBySlug,
   products,
   type Product,
+  type OptionGroup,
+  type OptionChoice,
   categoryLabels,
 } from "@/lib/products";
 import { useCart, formatSGD } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Minus, Plus, ChevronRight } from "lucide-react";
+import { Minus, Plus, ChevronRight, Check } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/shop/$slug")({
   loader: ({ params }) => {
@@ -35,7 +37,7 @@ export const Route = createFileRoute("/shop/$slug")({
   },
   notFoundComponent: () => (
     <div className="container-page py-24 text-center">
-      <h1 className="font-display text-3xl text-forest-deep">Bouquet not found</h1>
+      <h1 className="font-display text-3xl text-loam">Bouquet not found</h1>
       <Link to="/shop" className="mt-4 inline-block text-sm underline">
         Back to shop
       </Link>
@@ -52,6 +54,43 @@ export const Route = createFileRoute("/shop/$slug")({
 function PdpPage() {
   const { product } = Route.useLoaderData();
   return <Pdp product={product} />;
+}
+
+// Map common colour values to actual swatch colours
+const colourSwatch: Record<string, string> = {
+  pink: "#f5c6cf",
+  red: "#a8323a",
+  white: "#f4ede1",
+  cappuccino: "#bfa085",
+  "dark-blue": "#28406b",
+  "mixed-blues": "linear-gradient(135deg,#4866a0,#9fb6dc)",
+  "mixed-pinks": "linear-gradient(135deg,#e6a4b1,#f5d3da)",
+  pastels: "linear-gradient(135deg,#f5d3da,#cdd9ec,#e7dcd0)",
+  dark: "linear-gradient(135deg,#5a2b3e,#2a3b4f)",
+  emerald: "#2f5a45",
+  purple: "#6a4f88",
+  green: "#6e8266",
+  khaki: "#a89a72",
+  blue: "#4f6f96",
+  "silver-white": "linear-gradient(135deg,#cfcfc8,#f5ede0)",
+  black: "#1c1a17",
+  newspaper: "linear-gradient(135deg,#e8e2d3,#bfb8a6)",
+  brown: "#7a5640",
+  "white-grad": "#f4ede1",
+  "brown-grad": "#7a5640",
+  soft: "linear-gradient(135deg,#f5d3da,#f4ede1)",
+  rich: "linear-gradient(135deg,#a8323a,#5a2b3e)",
+  whispers: "linear-gradient(135deg,#f5d3da,#f4ede1)",
+  classics: "#a8323a",
+  helios: "#e6b94f",
+};
+
+function isColourGroup(g: OptionGroup) {
+  return /colour|color|scheme/i.test(g.label) || g.id === "colour" || g.id === "scheme";
+}
+
+function isSizeOrCountGroup(g: OptionGroup) {
+  return /size|stalk/i.test(g.label) || g.id === "size" || g.id === "stalks";
 }
 
 function Pdp({ product }: { product: Product }) {
@@ -99,88 +138,84 @@ function Pdp({ product }: { product: Product }) {
     toast.success(`${product.name} added to your bag.`);
   };
 
+  const setOpt = (id: string, value: string) =>
+    setSelections((p) => ({ ...p, [id]: value }));
+
   return (
     <div className="bg-cream">
       <div className="container-page py-10 md:py-14">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Link to="/shop" className="hover:text-forest-deep">Shop</Link>
+          <Link to="/shop" className="hover:text-loam">Shop</Link>
           <ChevronRight className="size-3" />
-          <span className="text-forest-deep">{product.name}</span>
+          <span className="text-loam">{product.name}</span>
         </nav>
 
-        <div className="mt-8 grid gap-12 md:grid-cols-2 md:gap-16">
+        <div className="mt-8 grid gap-12 md:grid-cols-12 md:gap-16">
           {/* Gallery */}
-          <div className="overflow-hidden rounded-3xl bg-secondary">
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full object-cover"
-            />
+          <div className="md:col-span-7">
+            <div className="overflow-hidden rounded-[2rem] bg-shell">
+              <img
+                src={product.image}
+                alt={product.name}
+                className="aspect-[4/5] w-full object-cover"
+              />
+            </div>
           </div>
 
           {/* Details */}
-          <div className="md:sticky md:top-28 md:self-start">
-            <p className="text-xs uppercase tracking-[0.25em] text-clay">
+          <div className="md:col-span-5 md:sticky md:top-28 md:self-start">
+            <p className="text-[11px] uppercase tracking-[0.32em] text-clay">
               {categoryLabels[product.category]}
             </p>
-            <h1 className="mt-3 font-display text-4xl leading-tight text-forest-deep md:text-5xl">
+            <h1 className="mt-3 font-display text-4xl leading-[1.05] text-loam md:text-5xl">
               {product.name}
             </h1>
-            <p className="mt-4 text-2xl text-forest-deep tabular-nums">
-              {product.fromPrice && product.options.length === 0 ? "from " : ""}
-              {formatSGD(price)}
+            <div className="mt-5 flex items-baseline gap-3">
+              <p className="font-display text-3xl text-loam tabular-nums">
+                {formatSGD(price)}
+              </p>
+              <span className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+                {qty > 1 ? `× ${qty} = ${formatSGD(price * qty)}` : "incl. wrap"}
+              </span>
+            </div>
+
+            <div className="my-7 divider-rule" />
+
+            <p className="font-serif-italic text-lg leading-relaxed text-ink/80">
+              {product.shortDescription}
             </p>
-            <p className="mt-6 text-sm leading-relaxed text-ink/80">
+            <p className="mt-4 text-sm leading-relaxed text-ink/75">
               {product.description}
             </p>
 
             {/* Options */}
             {product.options.length > 0 && (
-              <div className="mt-8 space-y-5">
+              <div className="mt-8 space-y-7">
                 {product.options.map((g) => (
-                  <div key={g.id}>
-                    <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                      {g.label}{g.required && " *"}
-                    </label>
-                    <Select
-                      value={selections[g.id]}
-                      onValueChange={(v) =>
-                        setSelections((prev) => ({ ...prev, [g.id]: v }))
-                      }
-                    >
-                      <SelectTrigger className="mt-2 h-12 rounded-full border-forest/25 bg-cream">
-                        <SelectValue placeholder={`Select ${g.label.toLowerCase()}`} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {g.choices.map((c) => (
-                          <SelectItem key={c.value} value={c.value}>
-                            {c.label}
-                            {typeof c.priceDelta === "number" && c.priceDelta !== 0
-                              ? ` (+SGD ${c.priceDelta.toFixed(2)})`
-                              : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <OptionGroupControl
+                    key={g.id}
+                    group={g}
+                    value={selections[g.id]}
+                    onChange={(v) => setOpt(g.id, v)}
+                  />
                 ))}
               </div>
             )}
 
             {/* Qty + add */}
-            <div className="mt-8 flex items-center gap-3">
-              <div className="inline-flex h-12 items-center rounded-full border border-forest/25">
+            <div className="mt-9 flex items-stretch gap-3">
+              <div className="inline-flex items-center rounded-md border hairline bg-shell">
                 <button
-                  className="px-4"
+                  className="px-4 py-3 text-ink/70 hover:text-loam"
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
                   aria-label="Decrease"
                 >
                   <Minus className="size-4" />
                 </button>
-                <span className="w-8 text-center tabular-nums">{qty}</span>
+                <span className="w-8 text-center text-sm tabular-nums">{qty}</span>
                 <button
-                  className="px-4"
+                  className="px-4 py-3 text-ink/70 hover:text-loam"
                   onClick={() => setQty((q) => q + 1)}
                   aria-label="Increase"
                 >
@@ -189,23 +224,31 @@ function Pdp({ product }: { product: Product }) {
               </div>
               <Button
                 size="lg"
-                className="h-12 flex-1 rounded-full bg-forest text-cream hover:bg-forest-deep"
+                className="h-auto flex-1 rounded-md bg-loam px-6 py-3 text-sm uppercase tracking-[0.2em] text-cream hover:bg-ink"
                 onClick={handleAdd}
               >
-                Add to bag — {formatSGD(price * qty)}
+                Add to bag · {formatSGD(price * qty)}
               </Button>
             </div>
 
-            <p className="mt-6 text-xs text-muted-foreground">
+            <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
               Made fresh, to order. Please order at least 2 days before
               delivery or collection. For urgent requests, message
-              @petit.blooms on Instagram.
+              <a
+                href="https://www.instagram.com/petit.blooms"
+                className="ml-1 underline underline-offset-2 hover:text-loam"
+                target="_blank"
+                rel="noreferrer"
+              >
+                @petit.blooms
+              </a>{" "}
+              on Instagram.
             </p>
 
             {/* Add-ons */}
             {addOnProducts.length > 0 && (
-              <div className="mt-10 border-t border-forest/10 pt-8">
-                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              <div className="mt-10 border-t hairline pt-8">
+                <p className="text-[11px] uppercase tracking-[0.28em] text-clay">
                   Pair it with
                 </p>
                 <div className="mt-4 grid gap-3">
@@ -214,15 +257,15 @@ function Pdp({ product }: { product: Product }) {
                       key={a.slug}
                       to="/shop/$slug"
                       params={{ slug: a.slug }}
-                      className="group flex items-center gap-4 rounded-2xl border border-forest/15 p-3 transition-colors hover:border-forest/40"
+                      className="group flex items-center gap-4 rounded-xl border hairline bg-shell p-3 transition-all hover:-translate-y-0.5 hover:border-clay/50"
                     >
                       <img
                         src={a.image}
                         alt={a.name}
-                        className="h-16 w-16 flex-none rounded-xl object-cover"
+                        className="h-16 w-16 flex-none rounded-lg object-cover"
                       />
                       <div className="flex-1">
-                        <p className="font-display text-base text-forest-deep">{a.name}</p>
+                        <p className="font-display text-base text-loam">{a.name}</p>
                         <p className="text-xs text-muted-foreground line-clamp-1">
                           {a.shortDescription}
                         </p>
@@ -239,5 +282,270 @@ function Pdp({ product }: { product: Product }) {
         </div>
       </div>
     </div>
+  );
+}
+
+/* -------------------- Option controls -------------------- */
+
+function OptionGroupControl({
+  group,
+  value,
+  onChange,
+}: {
+  group: OptionGroup;
+  value?: string;
+  onChange: (v: string) => void;
+}) {
+  const header = (
+    <div className="flex items-baseline justify-between">
+      <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-loam">
+        {group.label}
+        {group.required && <span className="ml-1 text-clay">*</span>}
+      </p>
+      {value && (
+        <p className="text-xs text-muted-foreground">
+          {group.choices.find((c) => c.value === value)?.label}
+        </p>
+      )}
+    </div>
+  );
+
+  // Booking type / payment-style → card grid
+  if (group.id === "booking") {
+    return (
+      <div>
+        {header}
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          {group.choices.map((c) => (
+            <BookingCard
+              key={c.value}
+              choice={c}
+              active={value === c.value}
+              onClick={() => onChange(c.value)}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Sizes / stalk counts → segmented bar
+  if (isSizeOrCountGroup(group)) {
+    return (
+      <div>
+        {header}
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {group.choices.map((c) => (
+            <SegmentChip
+              key={c.value}
+              active={value === c.value}
+              onClick={() => onChange(c.value)}
+              label={c.label}
+              hint={
+                typeof c.setsPriceTo === "number"
+                  ? formatSGD(c.setsPriceTo)
+                  : typeof c.priceDelta === "number" && c.priceDelta !== 0
+                  ? `+${formatSGD(c.priceDelta)}`
+                  : undefined
+              }
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Colour / scheme → swatch pills
+  if (isColourGroup(group)) {
+    return (
+      <div>
+        {header}
+        <div className="mt-3 flex flex-wrap gap-2">
+          {group.choices.map((c) => (
+            <SwatchPill
+              key={c.value}
+              choice={c}
+              active={value === c.value}
+              onClick={() => onChange(c.value)}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Default → tidy text pills
+  return (
+    <div>
+      {header}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {group.choices.map((c) => {
+          const active = value === c.value;
+          return (
+            <button
+              key={c.value}
+              type="button"
+              onClick={() => onChange(c.value)}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-md border px-3.5 py-2 text-sm transition-all",
+                active
+                  ? "border-loam bg-loam text-cream"
+                  : "border-ink/15 bg-shell text-ink/80 hover:border-clay/50 hover:text-loam"
+              )}
+            >
+              {c.label}
+              {typeof c.priceDelta === "number" && c.priceDelta !== 0 && (
+                <span className="text-xs text-muted-foreground">
+                  +{formatSGD(c.priceDelta)}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function BookingCard({
+  choice,
+  active,
+  onClick,
+}: {
+  choice: OptionChoice;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "group relative flex flex-col items-start gap-2 rounded-xl border p-4 text-left transition-all",
+        active
+          ? "border-loam bg-loam text-cream shadow-[var(--shadow-soft)]"
+          : "border-ink/15 bg-shell text-ink/80 hover:-translate-y-0.5 hover:border-clay/60 hover:text-loam"
+      )}
+    >
+      <span
+        className={cn(
+          "absolute right-3 top-3 inline-flex size-5 items-center justify-center rounded-full border",
+          active ? "border-cream/70 bg-cream/10" : "border-ink/20"
+        )}
+      >
+        {active && <Check className="size-3" />}
+      </span>
+      <span
+        className={cn(
+          "text-[10px] uppercase tracking-[0.28em]",
+          active ? "text-cream/70" : "text-clay"
+        )}
+      >
+        {choice.value === "deposit" ? "Reserve" : "Pay in full"}
+      </span>
+      <span
+        className={cn(
+          "font-display text-lg leading-tight",
+          active ? "text-cream" : "text-loam"
+        )}
+      >
+        {choice.label.split(" (")[0]}
+      </span>
+      {typeof choice.setsPriceTo === "number" && (
+        <span
+          className={cn(
+            "font-display text-xl tabular-nums",
+            active ? "text-cream" : "text-loam"
+          )}
+        >
+          {formatSGD(choice.setsPriceTo)}
+        </span>
+      )}
+      <span
+        className={cn(
+          "text-xs leading-snug",
+          active ? "text-cream/75" : "text-muted-foreground"
+        )}
+      >
+        {choice.label.includes("(")
+          ? choice.label.slice(choice.label.indexOf("(") + 1, -1)
+          : ""}
+      </span>
+    </button>
+  );
+}
+
+function SegmentChip({
+  active,
+  onClick,
+  label,
+  hint,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  hint?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex flex-col items-center gap-0.5 rounded-md border px-3 py-2.5 transition-all",
+        active
+          ? "border-loam bg-loam text-cream"
+          : "border-ink/15 bg-shell text-ink/80 hover:border-clay/50 hover:text-loam"
+      )}
+    >
+      <span className="text-sm font-medium">{label}</span>
+      {hint && (
+        <span
+          className={cn(
+            "text-[11px] tabular-nums",
+            active ? "text-cream/75" : "text-muted-foreground"
+          )}
+        >
+          {hint}
+        </span>
+      )}
+    </button>
+  );
+}
+
+function SwatchPill({
+  choice,
+  active,
+  onClick,
+}: {
+  choice: OptionChoice;
+  active: boolean;
+  onClick: () => void;
+}) {
+  const swatch = colourSwatch[choice.value];
+  const style = swatch
+    ? swatch.startsWith("linear-gradient")
+      ? { backgroundImage: swatch }
+      : { backgroundColor: swatch }
+    : { backgroundColor: "var(--shell)" };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-3.5 text-sm transition-all",
+        active
+          ? "border-loam bg-loam text-cream"
+          : "border-ink/15 bg-shell text-ink/80 hover:border-clay/50 hover:text-loam"
+      )}
+    >
+      <span
+        className={cn(
+          "inline-block size-6 rounded-full border",
+          active ? "border-cream/40" : "border-ink/15"
+        )}
+        style={style}
+      />
+      <span>{choice.label}</span>
+    </button>
   );
 }
