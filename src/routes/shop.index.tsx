@@ -16,7 +16,7 @@ const searchSchema = z.object({
     .catch("all"),
 });
 
-export const Route = createFileRoute("/shop")({
+export const Route = createFileRoute("/shop/")({
   head: () => ({
     meta: [
       { title: "Shop — petit blooms" },
