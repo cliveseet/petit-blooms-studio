@@ -95,7 +95,7 @@ function ShopPage() {
                       key={c.id}
                       type="button"
                       onClick={() =>
-                        navigate({ search: (prev) => ({ ...prev, category: c.id }) })
+                        navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, category: c.id }) })
                       }
                       className={cn(
                         "rounded-full border px-4 py-1.5 text-sm transition-colors",
@@ -123,7 +123,7 @@ function ShopPage() {
                       key={o.id}
                       type="button"
                       onClick={() =>
-                        navigate({ search: (prev) => ({ ...prev, occasion: o.id }) })
+                        navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, occasion: o.id }) })
                       }
                       className={cn(
                         "rounded-full border px-4 py-1.5 text-sm transition-colors",
