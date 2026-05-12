@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Instagram, Mail, Send } from "lucide-react";
+import { Instagram, Mail, Send, ArrowUpRight } from "lucide-react";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/contact")({
       {
         name: "description",
         content:
-          "Reach petit blooms by email, Instagram or Telegram. We reply within 1–2 days.",
+          "Reach petit blooms by email, Instagram or Telegram. We reply within 1–2 days; Instagram DM is fastest for urgent requests.",
       },
       { property: "og:title", content: "Contact — petit blooms" },
       {
@@ -20,114 +20,72 @@ export const Route = createFileRoute("/contact")({
   component: ContactPage,
 });
 
+const channels = [
+  {
+    id: "email",
+    label: "Email",
+    value: "denise@petitblooms.com",
+    note: "Best for detailed enquiries and quotes.",
+    href: "mailto:denise@petitblooms.com",
+    Icon: Mail,
+  },
+  {
+    id: "instagram",
+    label: "Instagram",
+    value: "@petit.blooms",
+    note: "Fastest reply — best for urgent requests.",
+    href: "https://www.instagram.com/petit.blooms",
+    Icon: Instagram,
+  },
+  {
+    id: "telegram",
+    label: "Telegram channel",
+    value: "Bouquet updates & offers",
+    note: "Join for new drops and seasonal sales.",
+    href: "https://t.me/+ltJGQrNGxMFkZDY1",
+    Icon: Send,
+  },
+];
+
 function ContactPage() {
   return (
-    <section className="container-page grid gap-12 py-20 md:grid-cols-12 md:py-28">
-      <div className="md:col-span-6">
+    <section className="container-page py-20 md:py-28">
+      <div className="mx-auto max-w-2xl text-center">
         <p className="text-xs uppercase tracking-[0.3em] text-clay">Contact</p>
         <h1 className="mt-4 font-display text-5xl text-forest-deep md:text-6xl">
-          Let's chat about your bouquet.
+          Let&apos;s chat about your bouquet.
         </h1>
-        <div className="mt-8 space-y-5 text-ink/85">
-          <p>
-            For enquiries or special requests, email{" "}
-            <a className="underline underline-offset-4" href="mailto:denise@petitblooms.com">
-              denise@petitblooms.com
-            </a>{" "}
-            or message{" "}
-            <a
-              className="underline underline-offset-4"
-              href="https://www.instagram.com/petit.blooms"
-              target="_blank"
-              rel="noreferrer"
-            >
-              @petit.blooms
-            </a>{" "}
-            on Instagram.
-          </p>
-          <p>
-            We reply within 1–2 days. For urgent requests, Instagram Direct
-            Messages are highly encouraged.
-          </p>
-          <p>
-            Join our Telegram channel for bouquet updates and offers:{" "}
-            <a
-              className="underline underline-offset-4"
-              href="https://t.me/+ltJGQrNGxMFkZDY1"
-              target="_blank"
-              rel="noreferrer"
-            >
-              t.me/+ltJGQrNGxMFkZDY1
-            </a>
-            .
-          </p>
-        </div>
+        <p className="mx-auto mt-6 max-w-lg text-ink/75">
+          For enquiries, special requests or last-minute orders — pick the
+          channel that suits you. We reply within 1–2 days.
+        </p>
       </div>
 
-      <div className="md:col-span-5 md:col-start-8">
-        <div className="rounded-3xl border border-forest/15 bg-cream p-8">
-          <ul className="space-y-5">
-            <li>
-              <a
-                href="mailto:denise@petitblooms.com"
-                className="group flex items-start gap-4"
-              >
-                <span className="mt-1 rounded-full bg-forest/10 p-2 text-forest">
-                  <Mail className="size-4" />
-                </span>
-                <span>
-                  <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                    Email
-                  </p>
-                  <p className="font-display text-lg text-forest-deep group-hover:underline">
-                    denise@petitblooms.com
-                  </p>
-                </span>
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://www.instagram.com/petit.blooms"
-                target="_blank"
-                rel="noreferrer"
-                className="group flex items-start gap-4"
-              >
-                <span className="mt-1 rounded-full bg-forest/10 p-2 text-forest">
-                  <Instagram className="size-4" />
-                </span>
-                <span>
-                  <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                    Instagram
-                  </p>
-                  <p className="font-display text-lg text-forest-deep group-hover:underline">
-                    @petit.blooms
-                  </p>
-                </span>
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://t.me/+ltJGQrNGxMFkZDY1"
-                target="_blank"
-                rel="noreferrer"
-                className="group flex items-start gap-4"
-              >
-                <span className="mt-1 rounded-full bg-forest/10 p-2 text-forest">
-                  <Send className="size-4" />
-                </span>
-                <span>
-                  <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                    Telegram
-                  </p>
-                  <p className="font-display text-lg text-forest-deep group-hover:underline">
-                    @petit.blooms channel
-                  </p>
-                </span>
-              </a>
-            </li>
-          </ul>
-        </div>
+      <div className="mx-auto mt-14 grid max-w-4xl gap-4 md:grid-cols-3">
+        {channels.map(({ id, label, value, note, href, Icon }) => (
+          <a
+            key={id}
+            href={href}
+            target={href.startsWith("http") ? "_blank" : undefined}
+            rel={href.startsWith("http") ? "noreferrer" : undefined}
+            className="group relative flex flex-col rounded-3xl border border-forest/15 bg-cream p-7 transition-all hover:-translate-y-0.5 hover:border-forest/40 hover:shadow-[var(--shadow-lift)]"
+          >
+            <span className="inline-flex size-10 items-center justify-center rounded-full bg-forest/10 text-forest">
+              <Icon className="size-4" />
+            </span>
+            <p className="mt-6 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              {label}
+            </p>
+            <p className="mt-2 font-display text-xl text-forest-deep">{value}</p>
+            <p className="mt-3 text-sm text-ink/70">{note}</p>
+            <ArrowUpRight className="absolute right-6 top-6 size-4 text-forest/50 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-forest" />
+          </a>
+        ))}
       </div>
+
+      <p className="mx-auto mt-14 max-w-xl text-center text-sm text-muted-foreground">
+        For urgent requests, Instagram Direct Messages are highly encouraged.
+      </p>
     </section>
   );
 }
