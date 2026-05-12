@@ -82,48 +82,66 @@ function ShopPage() {
       {/* Filters + grid */}
       <section className="container-page grid gap-12 pb-24 md:grid-cols-12 md:gap-10">
         <aside className="md:col-span-3">
-          <div className="md:sticky md:top-28">
-            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
-              Category
-            </p>
-            <ul className="mt-3 space-y-1.5">
-              {categories.map((c) => (
-                <li key={c.id}>
-                  <button
-                    onClick={() =>
-                      navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, category: c.id }) })
-                    }
-                    className={cn(
-                      "text-sm text-ink/70 hover:text-forest-deep",
-                      category === c.id && "text-forest-deep underline underline-offset-4"
-                    )}
-                  >
-                    {c.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
+          <div className="md:sticky md:top-28 space-y-8">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.25em] text-forest-deep/80">
+                Category
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {categories.map((c) => {
+                  const active = category === c.id;
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() =>
+                        navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, category: c.id }) })
+                      }
+                      className={cn(
+                        "rounded-full border px-4 py-1.5 text-sm transition-colors",
+                        active
+                          ? "border-forest-deep bg-forest text-cream"
+                          : "border-forest/25 text-ink/75 hover:border-forest/60 hover:text-forest-deep"
+                      )}
+                    >
+                      {c.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
-            <p className="mt-8 text-xs uppercase tracking-[0.25em] text-muted-foreground">
-              Occasion
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.25em] text-forest-deep/80">
+                Occasion
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {occasions.map((o) => {
+                  const active = occasion === o.id;
+                  return (
+                    <button
+                      key={o.id}
+                      type="button"
+                      onClick={() =>
+                        navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, occasion: o.id }) })
+                      }
+                      className={cn(
+                        "rounded-full border px-4 py-1.5 text-sm transition-colors",
+                        active
+                          ? "border-forest-deep bg-forest text-cream"
+                          : "border-forest/25 text-ink/75 hover:border-forest/60 hover:text-forest-deep"
+                      )}
+                    >
+                      {o.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              {filtered.length} {filtered.length === 1 ? "piece" : "pieces"}
             </p>
-            <ul className="mt-3 space-y-1.5">
-              {occasions.map((o) => (
-                <li key={o.id}>
-                  <button
-                    onClick={() =>
-                      navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, occasion: o.id }) })
-                    }
-                    className={cn(
-                      "text-sm text-ink/70 hover:text-forest-deep",
-                      occasion === o.id && "text-forest-deep underline underline-offset-4"
-                    )}
-                  >
-                    {o.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
           </div>
         </aside>
 
@@ -139,19 +157,22 @@ function ShopPage() {
                   key={p.slug}
                   to="/shop/$slug"
                   params={{ slug: p.slug }}
-                  className="group block"
+                  className="group block focus:outline-none"
                 >
-                  <div className="overflow-hidden rounded-2xl bg-secondary">
+                  <div className="relative overflow-hidden rounded-2xl bg-secondary">
                     <img
                       src={p.image}
                       alt={p.name}
                       loading="lazy"
                       className="aspect-[4/5] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                     />
+                    <span className="absolute inset-x-3 bottom-3 rounded-full bg-cream/95 py-2 text-center text-xs font-medium uppercase tracking-[0.2em] text-forest-deep opacity-0 backdrop-blur transition-opacity group-hover:opacity-100">
+                      View &amp; order
+                    </span>
                   </div>
                   <div className="mt-4 flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-display text-lg leading-snug text-forest-deep">
+                      <p className="font-display text-lg leading-snug text-forest-deep group-hover:underline underline-offset-4 decoration-forest/40">
                         {p.name}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
