@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import servicesWedding from "@/assets/services-wedding.jpg";
-import { MapPin, Truck } from "lucide-react";
+import { MapPin, Truck, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/services")({
   head: () => ({
@@ -26,16 +26,17 @@ export const Route = createFileRoute("/services")({
 function ServicesPage() {
   return (
     <div>
-      <section className="bg-cream">
+      {/* Hero — deep forest */}
+      <section className="bg-forest-deep text-cream">
         <div className="container-page grid gap-10 py-20 md:grid-cols-12 md:gap-16 md:py-28">
           <div className="md:col-span-5">
-            <p className="text-xs uppercase tracking-[0.3em] text-clay">Services</p>
-            <h1 className="mt-4 font-display text-5xl text-forest-deep md:text-6xl">
+            <p className="text-xs uppercase tracking-[0.3em] text-cream/60">Services</p>
+            <h1 className="mt-4 font-display text-5xl text-cream md:text-6xl">
               Florals for the moments that matter.
             </h1>
-            <p className="mt-6 max-w-md text-ink/80">
-              From bridal bouquets to last-minute pick-ups — designed,
-              tied and delivered with care.
+            <p className="mt-6 max-w-md text-cream/75">
+              From bridal bouquets to last-minute pick-ups — designed, tied
+              and delivered with care.
             </p>
           </div>
           <div className="md:col-span-7">
@@ -43,52 +44,57 @@ function ServicesPage() {
               src={servicesWedding}
               alt="Bridal bouquet on a chair beside a chapel window at golden hour"
               loading="lazy"
-              className="aspect-[4/3] w-full rounded-3xl object-cover"
+              className="aspect-[4/3] w-full rounded-3xl object-cover shadow-2xl"
             />
           </div>
         </div>
       </section>
 
-      {/* Wedding package */}
-      <section className="container-page grid gap-12 py-20 md:grid-cols-12 md:py-24">
-        <div className="md:col-span-5">
-          <p className="text-xs uppercase tracking-[0.3em] text-clay">Weddings</p>
-          <h2 className="mt-4 font-display text-4xl text-forest-deep md:text-5xl">
-            Intimate Love — wedding package
-          </h2>
-        </div>
-        <div className="md:col-span-6 md:col-start-7">
-          <div className="rounded-3xl border border-forest/15 bg-cream p-8">
-            <p className="text-sm uppercase tracking-[0.2em] text-clay">From SGD 300</p>
-            <ul className="mt-5 space-y-3 text-ink/85">
-              <li className="flex gap-3"><span className="text-forest">—</span> Bride's bouquet</li>
-              <li className="flex gap-3"><span className="text-forest">—</span> Groom's boutonnière</li>
-              <li className="flex gap-3"><span className="text-forest">—</span> Parents' boutonnières</li>
-            </ul>
-            <p className="mt-6 text-sm text-ink/75">
-              Other additions and urgent requests are also available. Reach
-              out to customise your big day's florals.
+      {/* Wedding package — cream */}
+      <section className="bg-cream">
+        <div className="container-page grid gap-12 py-20 md:grid-cols-12 md:py-24">
+          <div className="md:col-span-5">
+            <p className="text-xs uppercase tracking-[0.3em] text-clay">Weddings</p>
+            <h2 className="mt-4 font-display text-4xl text-forest-deep md:text-5xl">
+              Intimate Love — wedding package
+            </h2>
+            <p className="mt-5 max-w-md text-ink/75">
+              A curated trio of florals for the day itself, customised to
+              your palette and styling.
             </p>
-            <a
-              href="https://www.instagram.com/petit.blooms"
-              target="_blank"
-              rel="noreferrer"
-              className="mt-6 inline-flex rounded-full bg-forest px-6 py-3 text-sm text-cream hover:bg-forest-deep"
-            >
-              Message us to customise
-            </a>
+          </div>
+          <div className="md:col-span-6 md:col-start-7">
+            <div className="rounded-3xl border border-forest/15 bg-background p-8">
+              <p className="text-sm uppercase tracking-[0.2em] text-clay">From SGD 300</p>
+              <ul className="mt-5 space-y-3 text-ink/85">
+                <li className="flex gap-3"><span className="text-forest">—</span> Bride&apos;s bouquet</li>
+                <li className="flex gap-3"><span className="text-forest">—</span> Groom&apos;s boutonnière</li>
+                <li className="flex gap-3"><span className="text-forest">—</span> Parents&apos; boutonnières</li>
+              </ul>
+              <p className="mt-6 text-sm text-ink/75">
+                Other additions and urgent requests are also available. Reach
+                out to customise your big day&apos;s florals.
+              </p>
+              <a
+                href="https://www.instagram.com/petit.blooms"
+                target="_blank"
+                rel="noreferrer"
+                className="mt-6 inline-flex rounded-full bg-forest px-6 py-3 text-sm text-cream hover:bg-forest-deep"
+              >
+                Message us to customise
+              </a>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Lead time */}
+      {/* Lead time — forest band */}
       <section className="bg-forest text-cream">
         <div className="container-page grid gap-10 py-16 md:grid-cols-12 md:py-20">
           <div className="md:col-span-4">
-            <p className="text-xs uppercase tracking-[0.3em] text-cream/60">
-              Lead time
-            </p>
-            <h2 className="mt-4 font-display text-3xl text-cream md:text-4xl">
+            <Clock className="size-6 text-cream/70" />
+            <p className="mt-4 text-xs uppercase tracking-[0.3em] text-cream/60">Lead time</p>
+            <h2 className="mt-3 font-display text-3xl text-cream md:text-4xl">
               Order to collection or delivery
             </h2>
           </div>
@@ -97,7 +103,7 @@ function ServicesPage() {
               Please make orders preferably <strong className="text-cream">at least 2 days
               before</strong> the intended delivery or collection. For urgent
               requests, message <strong className="text-cream">@petit.blooms</strong> on
-              Instagram — you will also find other modes of contact there.
+              Instagram.
             </p>
             <p>
               As our bouquets are made to order and freshly prepared, please
@@ -109,7 +115,7 @@ function ServicesPage() {
         </div>
       </section>
 
-      {/* Delivery + Self-collection */}
+      {/* Delivery + Self-collection — base canvas */}
       <section className="container-page grid gap-8 py-20 md:grid-cols-2 md:py-24">
         <div className="rounded-3xl border border-forest/15 bg-cream p-8">
           <Truck className="size-6 text-forest" />

@@ -16,7 +16,7 @@ const searchSchema = z.object({
     .catch("all"),
 });
 
-export const Route = createFileRoute("/shop")({
+export const Route = createFileRoute("/shop/")({
   head: () => ({
     meta: [
       { title: "Shop — petit blooms" },
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/shop")({
 
 function ShopPage() {
   const { category, occasion } = Route.useSearch();
-  const navigate = useNavigate({ from: "/shop" });
+  const navigate = useNavigate({ from: "/shop/" });
 
   const filtered = products.filter((p) => {
     if (category !== "all" && p.category !== category) return false;
