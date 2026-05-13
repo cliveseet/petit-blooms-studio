@@ -56,33 +56,39 @@ function PdpPage() {
   return <Pdp product={product} />;
 }
 
-// Map common colour values to actual swatch colours
+// Map common colour values to actual swatch representations.
+// Multi-tone schemes use multi-stop gradients for accuracy.
 const colourSwatch: Record<string, string> = {
   pink: "#f5c6cf",
   red: "#a8323a",
   white: "#f4ede1",
   cappuccino: "#bfa085",
   "dark-blue": "#28406b",
-  "mixed-blues": "linear-gradient(135deg,#4866a0,#9fb6dc)",
-  "mixed-pinks": "linear-gradient(135deg,#e6a4b1,#f5d3da)",
-  pastels: "linear-gradient(135deg,#f5d3da,#cdd9ec,#e7dcd0)",
-  dark: "linear-gradient(135deg,#5a2b3e,#2a3b4f)",
+  "mixed-blues": "linear-gradient(135deg,#28406b 0%,#4866a0 50%,#9fb6dc 100%)",
+  "mixed-pinks": "linear-gradient(135deg,#a8323a 0%,#e6a4b1 50%,#f5d3da 100%)",
+  pastels: "linear-gradient(135deg,#f5d3da 0%,#f5e6c8 33%,#cdd9ec 66%,#e7dcd0 100%)",
+  // "Rich tones" — deep reds, plums, burgundies, violets
+  dark: "linear-gradient(135deg,#5a1a26 0%,#7a2a3e 33%,#5a2b6e 66%,#2a1a4f 100%)",
+  rich: "linear-gradient(135deg,#5a1a26 0%,#a8323a 33%,#6a2a5e 66%,#3a1a4f 100%)",
   emerald: "#2f5a45",
   purple: "#6a4f88",
   green: "#6e8266",
   khaki: "#a89a72",
   blue: "#4f6f96",
-  "silver-white": "linear-gradient(135deg,#cfcfc8,#f5ede0)",
+  // "Silver white" — pale silvers and ivories
+  "silver-white": "linear-gradient(135deg,#e0e0d8 0%,#f5ede0 50%,#cfcfc8 100%)",
   black: "#1c1a17",
-  newspaper: "linear-gradient(135deg,#e8e2d3,#bfb8a6)",
+  // Newspaper — kraft / sepia / cream tones
+  newspaper: "linear-gradient(135deg,#bfb8a6 0%,#e8e2d3 50%,#9a8c70 100%)",
   brown: "#7a5640",
   "white-grad": "#f4ede1",
-  "brown-grad": "#7a5640",
-  soft: "linear-gradient(135deg,#f5d3da,#f4ede1)",
-  rich: "linear-gradient(135deg,#a8323a,#5a2b3e)",
-  whispers: "linear-gradient(135deg,#f5d3da,#f4ede1)",
-  classics: "#a8323a",
-  helios: "#e6b94f",
+  "brown-grad": "linear-gradient(135deg,#f4ede1 0%,#bfa085 50%,#7a5640 100%)",
+  // Soft whispers — pastel pinks + blush + cream
+  soft: "linear-gradient(135deg,#f5d3da 0%,#f8e0d4 50%,#f4ede1 100%)",
+  whispers: "linear-gradient(135deg,#f5d3da 0%,#f8e0d4 50%,#f4ede1 100%)",
+  // Timeless classics — red + white + ivory
+  classics: "linear-gradient(135deg,#a8323a 0%,#d49b9f 50%,#f4ede1 100%)",
+  helios: "linear-gradient(135deg,#e6b94f 0%,#d49b9f 100%)",
 };
 
 function isColourGroup(g: OptionGroup) {
@@ -297,16 +303,11 @@ function OptionGroupControl({
   onChange: (v: string) => void;
 }) {
   const header = (
-    <div className="flex items-baseline justify-between">
+    <div>
       <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-loam">
         {group.label}
         {group.required && <span className="ml-1 text-clay">*</span>}
       </p>
-      {value && (
-        <p className="text-xs text-muted-foreground">
-          {group.choices.find((c) => c.value === value)?.label}
-        </p>
-      )}
     </div>
   );
 
