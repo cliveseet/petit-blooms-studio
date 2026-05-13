@@ -47,6 +47,9 @@ function CheckoutPage() {
   const [voucherApplied, setVoucherApplied] = useState<{ code: string; discount: number } | null>(null);
   const [name, setName] = useState(user?.user_metadata?.full_name ?? "");
   const [phone, setPhone] = useState("");
+  const [recipientName, setRecipientName] = useState("");
+  const [recipientPhone, setRecipientPhone] = useState("");
+  const [deliveryInstructions, setDeliveryInstructions] = useState("");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -81,6 +84,8 @@ function CheckoutPage() {
     !!slot &&
     !!name &&
     !!phone &&
+    !!recipientName &&
+    !!recipientPhone &&
     (fulfillment === "pickup" || (address.length > 5 && postal.length === 6));
 
   const placeOrder = async () => {
@@ -101,6 +106,9 @@ function CheckoutPage() {
       contact_name: name,
       contact_phone: phone,
       contact_email: user.email!,
+      recipient_name: recipientName,
+      recipient_phone: recipientPhone,
+      delivery_instructions: deliveryInstructions.trim() || null,
       notes: notes || null,
     }).select("id").single();
 
@@ -116,6 +124,7 @@ function CheckoutPage() {
         quantity: l.quantity,
         selections: l.selections,
         selection_labels: l.selectionLabels,
+        personal_message: l.personalMessage?.trim() || "NIL",
       })),
     );
     if (itemErr) { toast.error(itemErr.message); setBusy(false); return; }
@@ -257,13 +266,42 @@ function CheckoutPage() {
                 </div>
                 <div className="sm:col-span-2">
                   <Label className="text-xs uppercase tracking-[0.22em] text-clay">Notes (optional)</Label>
-                  <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="mt-2" rows={2} placeholder="Card message, allergies, special requests…" />
+                  <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="mt-2" rows={2} placeholder="Allergies, special requests, timing notes..." />
+                </div>
+              </div>
+            </Section>
+
+            {/* Recipient */}
+            <Section title={fulfillment === "delivery" ? "05" : "04"} heading="Recipient's details">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <p className="text-sm leading-6 text-ink/70">
+                    These details are for the person receiving the flowers, not the buyer.
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-xs uppercase tracking-[0.22em] text-clay">Recipient name</Label>
+                  <Input value={recipientName} onChange={(e) => setRecipientName(e.target.value)} className="mt-2" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase tracking-[0.22em] text-clay">Recipient phone</Label>
+                  <Input value={recipientPhone} onChange={(e) => setRecipientPhone(e.target.value)} placeholder="+65 ..." className="mt-2" />
+                </div>
+                <div className="sm:col-span-2">
+                  <Label className="text-xs uppercase tracking-[0.22em] text-clay">Delivery instructions (optional)</Label>
+                  <Textarea
+                    value={deliveryInstructions}
+                    onChange={(e) => setDeliveryInstructions(e.target.value)}
+                    className="mt-2"
+                    rows={2}
+                    placeholder="Concierge, gate code, preferred handover note..."
+                  />
                 </div>
               </div>
             </Section>
 
             {/* Voucher */}
-            <Section title={fulfillment === "delivery" ? "05" : "04"} heading="Voucher">
+            <Section title={fulfillment === "delivery" ? "06" : "05"} heading="Voucher">
               <div className="flex items-center gap-2">
                 <Input value={voucher} onChange={(e) => setVoucher(e.target.value)} placeholder="Discount code" className="flex-1" />
                 <Button type="button" variant="outline" onClick={applyVoucher}>Apply</Button>
@@ -290,6 +328,9 @@ function CheckoutPage() {
                       {Object.values(l.selectionLabels).length > 0 && (
                         <p className="text-[11px] text-muted-foreground">{Object.values(l.selectionLabels).join(" · ")}</p>
                       )}
+                      <p className="text-[11px] text-muted-foreground">
+                        Note: {l.personalMessage || "NIL"}
+                      </p>
                       <p className="text-[11px] text-ink/70">× {l.quantity}</p>
                     </div>
                     <p className="text-xs tabular-nums text-ink/80">{formatSGD(l.unitPrice * l.quantity)}</p>
@@ -301,6 +342,13 @@ function CheckoutPage() {
                 <Row k={fulfillment === "delivery" ? "Delivery" : "Self-collection"} v={deliveryFee === 0 ? "Free" : formatSGD(deliveryFee)} />
                 {discount > 0 && <Row k={`Voucher · ${voucherApplied!.code}`} v={`−${formatSGD(discount)}`} accent />}
               </dl>
+              {(recipientName || recipientPhone) && (
+                <div className="mt-5 rounded-md border hairline bg-cream/55 p-3 text-xs text-ink/70">
+                  <p className="uppercase tracking-[0.22em] text-clay">Recipient</p>
+                  <p className="mt-1">{recipientName || "Name pending"}</p>
+                  <p>{recipientPhone || "Phone pending"}</p>
+                </div>
+              )}
               <div className="my-5 divider-rule" />
               <div className="flex items-baseline justify-between">
                 <span className="text-xs uppercase tracking-[0.28em] text-clay">Total</span>

@@ -11,6 +11,8 @@ import {
 } from "@/lib/products";
 import { useCart, formatSGD } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Minus, Plus, ChevronRight, Check } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -108,6 +110,7 @@ function Pdp({ product }: { product: Product }) {
     return initial;
   });
   const [qty, setQty] = useState(1);
+  const [personalMessage, setPersonalMessage] = useState("");
   const { add } = useCart();
 
   const price = useMemo(() => computePrice(product, selections), [product, selections]);
@@ -140,6 +143,7 @@ function Pdp({ product }: { product: Product }) {
       quantity: qty,
       selections,
       selectionLabels: labels,
+      personalMessage: personalMessage.trim() || "NIL",
     });
     toast.success(`${product.name} added to your bag.`);
   };
@@ -209,8 +213,29 @@ function Pdp({ product }: { product: Product }) {
               </div>
             )}
 
+            <div className="mt-8">
+              <Label
+                htmlFor="personal-message"
+                className="text-[11px] font-medium uppercase tracking-[0.28em] text-loam"
+              >
+                Personal message for handwritten note
+              </Label>
+              <Textarea
+                id="personal-message"
+                value={personalMessage}
+                onChange={(e) => setPersonalMessage(e.target.value)}
+                className="mt-3 bg-shell"
+                rows={3}
+                maxLength={240}
+                placeholder="Write your note here, or leave blank for NIL."
+              />
+              <p className="mt-1.5 text-[11px] text-muted-foreground">
+                Leave blank if no handwritten note is needed.
+              </p>
+            </div>
+
             {/* Qty + add */}
-            <div className="mt-9 flex items-stretch gap-3">
+            <div className="mt-7 flex items-stretch gap-3">
               <div className="inline-flex items-center rounded-md border hairline bg-shell">
                 <button
                   className="px-4 py-3 text-ink/70 hover:text-loam"

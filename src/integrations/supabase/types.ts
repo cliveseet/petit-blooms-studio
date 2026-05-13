@@ -20,6 +20,7 @@ export type Database = {
           id: string
           image: string
           order_id: string
+          personal_message: string
           product_name: string
           product_slug: string
           quantity: number
@@ -32,6 +33,7 @@ export type Database = {
           id?: string
           image: string
           order_id: string
+          personal_message?: string
           product_name: string
           product_slug: string
           quantity: number
@@ -44,6 +46,7 @@ export type Database = {
           id?: string
           image?: string
           order_id?: string
+          personal_message?: string
           product_name?: string
           product_slug?: string
           quantity?: number
@@ -69,11 +72,14 @@ export type Database = {
           created_at: string
           delivery_address: string | null
           delivery_fee: number
+          delivery_instructions: string | null
           delivery_postal: string | null
           discount: number
           fulfillment: Database["public"]["Enums"]["fulfillment_type"]
           id: string
           notes: string | null
+          recipient_name: string | null
+          recipient_phone: string | null
           scheduled_date: string
           scheduled_time: string
           status: Database["public"]["Enums"]["order_status"]
@@ -90,11 +96,14 @@ export type Database = {
           created_at?: string
           delivery_address?: string | null
           delivery_fee?: number
+          delivery_instructions?: string | null
           delivery_postal?: string | null
           discount?: number
           fulfillment: Database["public"]["Enums"]["fulfillment_type"]
           id?: string
           notes?: string | null
+          recipient_name?: string | null
+          recipient_phone?: string | null
           scheduled_date: string
           scheduled_time: string
           status?: Database["public"]["Enums"]["order_status"]
@@ -111,11 +120,14 @@ export type Database = {
           created_at?: string
           delivery_address?: string | null
           delivery_fee?: number
+          delivery_instructions?: string | null
           delivery_postal?: string | null
           discount?: number
           fulfillment?: Database["public"]["Enums"]["fulfillment_type"]
           id?: string
           notes?: string | null
+          recipient_name?: string | null
+          recipient_phone?: string | null
           scheduled_date?: string
           scheduled_time?: string
           status?: Database["public"]["Enums"]["order_status"]

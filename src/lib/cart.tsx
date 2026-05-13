@@ -9,6 +9,7 @@ export type CartLine = {
   quantity: number;
   selections: Record<string, string>;
   selectionLabels: Record<string, string>;
+  personalMessage: string;
 };
 
 type CartCtx = {

@@ -58,6 +58,9 @@ export function CartDrawer() {
                         {Object.values(l.selectionLabels).join(" · ")}
                       </p>
                     )}
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Note: {l.personalMessage || "NIL"}
+                    </p>
                     <div className="mt-auto flex items-center justify-between pt-3">
                       <div className="inline-flex items-center rounded-full border border-forest/20">
                         <button

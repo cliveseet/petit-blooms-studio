@@ -14,6 +14,7 @@ type AuthCtx = {
   loading: boolean;
   resetPasswordForEmail: (email: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<AuthResult>;
+  signInWithGoogle: () => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<AuthResult>;
   signOut: () => Promise<void>;
 };
@@ -32,6 +33,10 @@ function getAuthRedirectTo(path: string, next?: string) {
   url.hash = "";
 
   return url.toString();
+}
+
+function authMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Authentication request failed.";
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -91,25 +96,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn: AuthCtx["signIn"] = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error?.message ?? null, session: data.session };
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      return { error: error?.message ?? null, session: data.session };
+    } catch (error) {
+      return { error: authMessage(error), session: null };
+    }
   };
   const signUp: AuthCtx["signUp"] = async (email, password, fullName) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: getAuthRedirectTo("/auth/confirm", "/account"),
-        data: { full_name: fullName },
-      },
-    });
-    return { error: error?.message ?? null, session: data.session };
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: getAuthRedirectTo("/auth/confirm", "/account"),
+          data: { full_name: fullName },
+        },
+      });
+      return { error: error?.message ?? null, session: data.session };
+    } catch (error) {
+      return { error: authMessage(error), session: null };
+    }
   };
   const resetPasswordForEmail: AuthCtx["resetPasswordForEmail"] = async (email) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: getAuthRedirectTo("/auth/reset-password"),
-    });
-    return { error: error?.message ?? null };
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: getAuthRedirectTo("/auth/reset-password"),
+      });
+      return { error: error?.message ?? null };
+    } catch (error) {
+      return { error: authMessage(error) };
+    }
+  };
+  const signInWithGoogle: AuthCtx["signInWithGoogle"] = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: getAuthRedirectTo("/auth/confirm", "/account"),
+        },
+      });
+      return { error: error?.message ?? null };
+    } catch (error) {
+      return { error: authMessage(error) };
+    }
   };
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -124,6 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         resetPasswordForEmail,
         signIn,
+        signInWithGoogle,
         signUp,
         signOut,
       }}

@@ -1,5 +1,5 @@
-import { Link } from "@tanstack/react-router";
-import { ShoppingBag, Menu, X, User } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { ShoppingBag, Menu, X, User, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
@@ -8,15 +8,22 @@ import { cn } from "@/lib/utils";
 const links = [
   { to: "/", label: "Home" },
   { to: "/shop", label: "Shop" },
-  { to: "/services", label: "Weddings" },
+  { to: "/services", label: "Weddings & Events" },
   { to: "/about", label: "About" },
   { to: "/contact", label: "Contact" },
 ] as const;
 
 export function Header() {
   const { count, setOpen } = useCart();
-  const { session, isAdmin } = useAuth();
+  const { session, isAdmin, signOut } = useAuth();
   const [menu, setMenu] = useState(false);
+  const nav = useNavigate();
+
+  const handleSignOut = async () => {
+    setMenu(false);
+    await signOut();
+    nav({ to: "/" });
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b hairline bg-cream/85 text-ink backdrop-blur-md">
@@ -25,7 +32,7 @@ export function Header() {
           {menu ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
 
-        <nav className="hidden items-center gap-9 md:flex">
+        <nav className="hidden items-center gap-7 md:flex">
           {links.slice(0, 3).map((l) => (
             <Link key={l.to} to={l.to}
               className="text-[11px] uppercase tracking-[0.28em] text-ink/65 transition-colors hover:text-loam"
@@ -40,7 +47,7 @@ export function Header() {
         </Link>
 
         <div className="flex items-center gap-7">
-          <nav className="hidden items-center gap-9 md:flex">
+          <nav className="hidden items-center gap-7 md:flex">
             {links.slice(3).map((l) => (
               <Link key={l.to} to={l.to}
                 className="text-[11px] uppercase tracking-[0.28em] text-ink/65 transition-colors hover:text-loam"
@@ -54,6 +61,16 @@ export function Header() {
               <User className="size-3.5" />
               {session ? (isAdmin ? "Admin" : "Account") : "Sign in"}
             </Link>
+            {session && (
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.28em] text-ink/55 transition-colors hover:text-loam"
+              >
+                <LogOut className="size-3.5" />
+                Sign out
+              </button>
+            )}
           </nav>
           <button onClick={() => setOpen(true)}
             className="flex items-center gap-2 text-[11px] uppercase tracking-[0.28em] text-ink/75 transition-colors hover:text-loam"
@@ -74,10 +91,19 @@ export function Header() {
                 {l.label}
               </Link>
             ))}
-            <Link to={session ? "/account" : "/login"} onClick={() => setMenu(false)}
+            <Link to={session ? (isAdmin ? "/admin" : "/account") : "/login"} onClick={() => setMenu(false)}
               className="border-b hairline py-3 text-base text-ink/85">
-              {session ? "Account" : "Sign in"}
+              {session ? (isAdmin ? "Admin" : "Account") : "Sign in"}
             </Link>
+            {session && (
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="border-b hairline py-3 text-left text-base text-ink/85"
+              >
+                Sign out
+              </button>
+            )}
           </nav>
         </div>
       </div>

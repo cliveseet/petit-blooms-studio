@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { AlertCircle } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Sign in — petit blooms" }] }),
@@ -17,7 +18,9 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
-  const { resetPasswordForEmail, signIn, signUp, session } = useAuth();
+  const [inlineMessage, setInlineMessage] = useState<string | null>(null);
+  const [resetMessage, setResetMessage] = useState<string | null>(null);
+  const { resetPasswordForEmail, signIn, signInWithGoogle, signUp, session } = useAuth();
   const nav = useNavigate();
 
   useEffect(() => {
@@ -26,12 +29,16 @@ function LoginPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setInlineMessage(null);
+    setResetMessage(null);
     setBusy(true);
     const res =
       mode === "signin" ? await signIn(email, password) : await signUp(email, password, name);
     setBusy(false);
     if (res.error) {
-      toast.error(res.error);
+      const message = authErrorCopy(res.error);
+      setInlineMessage(message);
+      toast.error(message);
     } else if (res.session) {
       toast.success(mode === "signup" ? "Account created." : "Welcome back.");
       nav({ to: "/account" });
@@ -44,18 +51,38 @@ function LoginPage() {
   };
 
   const sendReset = async () => {
+    setInlineMessage(null);
+    setResetMessage(null);
     if (!email) {
-      toast.error("Enter your email first.");
+      const message = "Enter your email first, then request a reset link.";
+      setInlineMessage(message);
+      toast.error(message);
       return;
     }
     setBusy(true);
     const res = await resetPasswordForEmail(email);
     setBusy(false);
     if (res.error) {
-      toast.error(res.error);
+      const message = authErrorCopy(res.error);
+      setInlineMessage(message);
+      toast.error(message);
       return;
     }
+    setResetMessage("Password reset email sent. Open the link to choose a new password.");
     toast.success("Password reset email sent.");
+  };
+
+  const googleSignIn = async () => {
+    setInlineMessage(null);
+    setResetMessage(null);
+    setBusy(true);
+    const res = await signInWithGoogle();
+    setBusy(false);
+    if (res.error) {
+      const message = authErrorCopy(res.error);
+      setInlineMessage(message);
+      toast.error(message);
+    }
   };
 
   return (
@@ -77,7 +104,11 @@ function LoginPage() {
               <button
                 key={m}
                 type="button"
-                onClick={() => setMode(m)}
+                onClick={() => {
+                  setMode(m);
+                  setInlineMessage(null);
+                  setResetMessage(null);
+                }}
                 className={`flex-1 rounded-sm px-3 py-2 transition-all ${mode === m ? "bg-loam text-cream" : "text-ink/70 hover:text-loam"}`}
               >
                 {m === "signin" ? "Sign in" : "Create"}
@@ -135,6 +166,42 @@ function LoginPage() {
             </Button>
           </form>
           {mode === "signin" && (
+            <>
+              <div className="my-5 flex items-center gap-3">
+                <span className="h-px flex-1 bg-ink/10" />
+                <span className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
+                  Or
+                </span>
+                <span className="h-px flex-1 bg-ink/10" />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={busy}
+                onClick={googleSignIn}
+                className="w-full border-ink/15 bg-cream text-loam hover:bg-shell"
+              >
+                <span className="mr-2 inline-flex size-5 items-center justify-center rounded-full border border-clay/40 font-display text-xs text-clay">
+                  G
+                </span>
+                Continue with Google
+              </Button>
+            </>
+          )}
+          {(inlineMessage || resetMessage) && (
+            <div
+              className={`mt-4 flex gap-3 rounded-md border px-4 py-3 text-sm ${
+                inlineMessage
+                  ? "border-destructive/25 bg-destructive/5 text-destructive"
+                  : "border-sage/40 bg-sage/20 text-loam"
+              }`}
+              role={inlineMessage ? "alert" : "status"}
+            >
+              {inlineMessage && <AlertCircle className="mt-0.5 size-4 flex-none" />}
+              <p>{inlineMessage ?? resetMessage}</p>
+            </div>
+          )}
+          {mode === "signin" && (
             <button
               type="button"
               onClick={sendReset}
@@ -153,4 +220,21 @@ function LoginPage() {
       </div>
     </div>
   );
+}
+
+function authErrorCopy(error: string) {
+  const message = error.toLowerCase();
+  if (message.includes("invalid login credentials")) {
+    return "The email or password is incorrect. Please check both and try again.";
+  }
+  if (message.includes("email not confirmed") || message.includes("confirm")) {
+    return "Please confirm your email before signing in. If you have already done so, request a new reset or confirmation link.";
+  }
+  if (message.includes("failed to fetch") || message.includes("network") || message.includes("fetch")) {
+    return "We could not reach Supabase. Check your internet connection and try again.";
+  }
+  if (message.includes("provider") || message.includes("oauth")) {
+    return "Google sign-in is not ready yet. Enable the Google provider in Supabase, then try again.";
+  }
+  return error;
 }

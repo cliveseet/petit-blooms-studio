@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { z } from "zod";
 import {
   products,
@@ -8,6 +9,7 @@ import {
   type Occasion,
 } from "@/lib/products";
 import { cn } from "@/lib/utils";
+import { Clock, MapPin, Truck } from "lucide-react";
 
 const searchSchema = z.object({
   category: z.enum(["all", "fresh", "preserved", "accessories"]).catch("all"),
@@ -76,6 +78,28 @@ function ShopPage() {
           Choose a piece — then make it yours. Sizes, colours and
           requests are set on the next page.
         </p>
+      </section>
+
+      <div className="container-page"><div className="divider-rule" /></div>
+
+      <section className="container-page py-12">
+        <div className="grid gap-4 md:grid-cols-3">
+          <ShopNote
+            icon={<Clock className="size-4" />}
+            title="Lead time"
+            copy="Please order at least 2 days before delivery or collection. For urgent requests, message @petit.blooms on Instagram."
+          />
+          <ShopNote
+            icon={<Truck className="size-4" />}
+            title="Delivery"
+            copy="Islandwide delivery starts from SGD 20, with the exact fee estimated at checkout from S570111."
+          />
+          <ShopNote
+            icon={<MapPin className="size-4" />}
+            title="Self-collection"
+            copy="Pick up from Bishan Street 12, Block 111, Singapore 570111 at your selected time slot."
+          />
+        </div>
       </section>
 
       <div className="container-page"><div className="divider-rule" /></div>
@@ -155,6 +179,18 @@ function ShopPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+function ShopNote({ icon, title, copy }: { icon: ReactNode; title: string; copy: string }) {
+  return (
+    <article className="rounded-2xl border hairline bg-shell p-5">
+      <span className="inline-flex size-9 items-center justify-center rounded-full bg-clay/10 text-clay">
+        {icon}
+      </span>
+      <h2 className="mt-4 font-display text-xl text-loam">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-ink/70">{copy}</p>
+    </article>
   );
 }
 

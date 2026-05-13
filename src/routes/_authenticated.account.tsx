@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,7 @@ type Order = {
     image: string;
     quantity: number;
     unit_price: number;
+    personal_message: string;
     selection_labels: Record<string, string>;
   }>;
 };
@@ -46,12 +47,18 @@ function AccountPage() {
   const { user, signOut, isAdmin } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const nav = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    nav({ to: "/" });
+  };
 
   useEffect(() => {
     if (!user) return;
     supabase
       .from("orders")
-      .select("id,status,fulfillment,scheduled_date,scheduled_time,total,created_at,order_items(id,product_name,image,quantity,unit_price,selection_labels)")
+      .select("id,status,fulfillment,scheduled_date,scheduled_time,total,created_at,order_items(id,product_name,image,quantity,unit_price,personal_message,selection_labels)")
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         setOrders((data as unknown as Order[]) ?? []);
@@ -76,7 +83,7 @@ function AccountPage() {
                 Admin dashboard
               </Link>
             )}
-            <Button variant="outline" onClick={signOut} className="text-xs uppercase tracking-[0.22em]">
+            <Button variant="outline" onClick={handleSignOut} className="text-xs uppercase tracking-[0.22em]">
               Sign out
             </Button>
           </div>
@@ -127,6 +134,9 @@ function AccountPage() {
                               {Object.values(it.selection_labels).join(" · ")}
                             </p>
                           )}
+                          <p className="text-xs text-muted-foreground">
+                            Note: {it.personal_message || "NIL"}
+                          </p>
                           <p className="text-xs text-ink/70">× {it.quantity}</p>
                         </div>
                         <p className="text-sm tabular-nums text-ink/80">{formatSGD(Number(it.unit_price) * it.quantity)}</p>

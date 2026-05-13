@@ -61,7 +61,7 @@ export function Footer() {
           <p>© {new Date().getFullYear()} petit blooms. Made with love in Singapore.</p>
           <nav className="flex gap-5">
             <Link to="/shop" className="hover:text-cream">Shop</Link>
-            <Link to="/services" className="hover:text-cream">Weddings</Link>
+            <Link to="/services" className="hover:text-cream">Weddings &amp; Events</Link>
             <Link to="/about" className="hover:text-cream">About</Link>
             <Link to="/contact" className="hover:text-cream">Contact</Link>
           </nav>

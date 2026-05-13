@@ -118,7 +118,7 @@ function HomePage() {
           {([
             { to: "/shop", search: { category: "fresh" as const, occasion: "all" as const }, label: "Fresh", num: "01", img: featured[0]?.image, sub: "Made to order, by hand." },
             { to: "/shop", search: { category: "preserved" as const, occasion: "all" as const }, label: "Preserved", num: "02", img: products.find((p) => p.slug === "eternal-love")?.image, sub: "A keepsake that lasts." },
-            { to: "/services", search: undefined, label: "Weddings", num: "03", img: servicesWedding, sub: "Florals for the day itself." },
+            { to: "/services", search: undefined, label: "Weddings & Events", num: "03", img: servicesWedding, sub: "Florals for the day itself." },
           ] as const).map((c) => (
             <Link
               key={c.label}
@@ -139,7 +139,11 @@ function HomePage() {
                 </p>
                 <h3 className="mt-1 font-display text-3xl text-cream">
                   {c.label}
-                  <span className="font-serif-italic text-blush"> bouquets</span>
+                  {c.to === "/services" ? (
+                    <span className="font-serif-italic text-blush"> florals</span>
+                  ) : (
+                    <span className="font-serif-italic text-blush"> bouquets</span>
+                  )}
                 </h3>
                 <p className="mt-2 max-w-xs text-sm text-cream/85">{c.sub}</p>
               </div>
@@ -204,7 +208,7 @@ function HomePage() {
           />
         </div>
         <div className="flex flex-col justify-center md:col-span-5 md:col-start-8">
-          <p className="text-[11px] uppercase tracking-[0.34em] text-clay">Weddings</p>
+          <p className="text-[11px] uppercase tracking-[0.34em] text-clay">Weddings &amp; Events</p>
           <h2 className="mt-4 font-display text-4xl text-loam md:text-5xl">
             Intimate Love
             <span className="block font-serif-italic text-clay">— wedding package.</span>
@@ -220,7 +224,7 @@ function HomePage() {
               to="/services"
               className="inline-flex items-center gap-2 rounded-md bg-loam px-6 py-3.5 text-xs uppercase tracking-[0.22em] text-cream hover:bg-ink"
             >
-              Explore wedding florals <ArrowUpRight className="size-4" />
+              Explore weddings &amp; events <ArrowUpRight className="size-4" />
             </Link>
           </div>
         </div>
