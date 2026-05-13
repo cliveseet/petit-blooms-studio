@@ -2,10 +2,17 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { useCart, formatSGD } from "@/lib/cart";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { useNavigate } from "@tanstack/react-router";
+import { useAuth } from "@/lib/auth";
 
 export function CartDrawer() {
   const { open, setOpen, lines, remove, setQty, subtotal, clear } = useCart();
+  const { session } = useAuth();
+  const nav = useNavigate();
+  const goCheckout = () => {
+    setOpen(false);
+    nav({ to: session ? "/checkout" : "/login" });
+  };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -88,16 +95,7 @@ export function CartDrawer() {
               <p className="text-xs text-muted-foreground">
                 Delivery from SGD 20 · complimentary for orders above SGD 180.
               </p>
-              <Button
-                className="w-full bg-forest text-cream hover:bg-forest-deep"
-                size="lg"
-                onClick={() => {
-                  toast.success("Checkout coming soon", {
-                    description:
-                      "Payment is being set up. In the meantime, message @petit.blooms on Instagram to confirm your order.",
-                  });
-                }}
-              >
+              <Button className="w-full bg-loam text-cream hover:bg-ink" size="lg" onClick={goCheckout}>
                 Proceed to checkout
               </Button>
               <button
