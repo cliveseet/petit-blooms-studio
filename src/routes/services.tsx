@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import servicesWedding from "@/assets/services-wedding.jpg";
 import petalsPromises from "@/assets/product-petals-promises.jpg";
-import { ArrowUpRight, Instagram, Mail } from "lucide-react";
+import eventFlorals from "@/assets/product-bloom-basket.jpg";
+import { ArrowUpRight } from "lucide-react";
 
 export const Route = createFileRoute("/services")({
   head: () => ({
@@ -147,41 +148,59 @@ function ServicesPage() {
 
       {/* Event florals */}
       <section id="events" className="container-page py-20 md:py-28">
-        <div className="grid gap-10 md:grid-cols-12 md:gap-14">
+        <div className="grid gap-14 md:grid-cols-12">
           <div className="md:col-span-5">
             <p className="text-[11px] uppercase tracking-[0.34em] text-clay">No. 02</p>
-            <h2 className="mt-4 font-display text-4xl text-loam md:text-5xl">
+            <h2 className="mt-4 font-display text-4xl leading-tight text-loam md:text-5xl">
               Event florals
-              <span className="block font-serif-italic text-clay">for gathered moments.</span>
+              <span className="block font-serif-italic text-clay">— composed for the room</span>
             </h2>
+            <p className="mt-6 max-w-md text-ink/75">
+              Florals for tables, launches, corporate gestures and private
+              celebrations — shaped to the scale, palette and mood of the gathering.
+            </p>
+            <div className="mt-8 overflow-hidden rounded-2xl">
+              <img
+                src={eventFlorals}
+                alt="Basket arrangement of fresh blooms for an occasion table"
+                loading="lazy"
+                className="aspect-[4/5] w-full object-cover"
+              />
+            </div>
           </div>
-          <div className="md:col-span-6 md:col-start-7">
+
+          <div className="md:col-span-6 md:col-start-7 md:pt-12">
             <div className="rounded-2xl border hairline bg-shell p-8 md:p-10">
-              <p className="text-sm leading-7 text-ink/80">
-                For corporate events, celebrations, intimate dinners and
-                gifting tables, petit blooms creates custom arrangements that
-                suit the mood, palette and scale of the occasion. Share your
-                date, venue, rough budget and preferred colours; Denise will
-                suggest a floral direction that feels considered and natural.
+              <p className="font-serif-italic text-xl leading-relaxed text-loam">
+                Small arrangements can change the feeling of a room: a welcome
+                table, a dinner setting, a quiet gift placed at each seat.
               </p>
-              <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                <a
-                  href="https://www.instagram.com/petit.blooms"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-md bg-loam px-5 py-3 text-xs uppercase tracking-[0.22em] text-cream hover:bg-ink"
-                >
-                  <Instagram className="size-4" />
-                  Enquire on Instagram
-                </a>
-                <a
-                  href="mailto:denise@petitblooms.com"
-                  className="inline-flex items-center justify-center gap-2 rounded-md border hairline px-5 py-3 text-xs uppercase tracking-[0.22em] text-loam hover:bg-cream"
-                >
-                  <Mail className="size-4" />
-                  Email Denise
-                </a>
-              </div>
+              <div className="my-6 divider-rule" />
+              <ul className="space-y-4 text-ink/85">
+                {[
+                  "Bud vases and table arrangements for intimate dinners",
+                  "Custom bouquets and baskets for launches or celebrations",
+                  "Corporate gestures, gifting corners and seasonal moments",
+                ].map((item, i) => (
+                  <li key={item} className="flex gap-4">
+                    <span className="font-display text-clay tabular-nums">
+                      0{i + 1}
+                    </span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-7 text-sm leading-6 text-ink/70">
+                Share the occasion, colour direction and rough quantity; Denise
+                will suggest a floral direction that feels personal without
+                overwhelming the setting.
+              </p>
+              <Link
+                to="/contact"
+                className="mt-7 inline-flex items-center gap-2 rounded-md bg-loam px-5 py-3 text-xs uppercase tracking-[0.22em] text-cream hover:bg-ink"
+              >
+                Enquire about event florals <ArrowUpRight className="size-4" />
+              </Link>
             </div>
           </div>
         </div>

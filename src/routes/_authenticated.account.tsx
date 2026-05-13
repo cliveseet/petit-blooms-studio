@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { formatSGD } from "@/lib/cart";
+import { ChevronLeft } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({ meta: [{ title: "Your account — petit blooms" }] }),
@@ -71,6 +72,13 @@ function AccountPage() {
       <div className="container-page py-16 md:py-24">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
+            <Link
+              to="/shop"
+              className="mb-6 inline-flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-clay hover:text-loam"
+            >
+              <ChevronLeft className="size-3.5" />
+              Back to shop
+            </Link>
             <p className="text-[11px] uppercase tracking-[0.34em] text-clay">Your account</p>
             <h1 className="mt-3 font-display text-4xl text-loam md:text-5xl">
               Hello, <span className="font-serif-italic text-clay">{user?.user_metadata?.full_name || user?.email?.split("@")[0]}</span>
@@ -135,7 +143,7 @@ function AccountPage() {
                             </p>
                           )}
                           <p className="text-xs text-muted-foreground">
-                            Note: {it.personal_message || "NIL"}
+                            Personal message: {it.personal_message || "NIL"}
                           </p>
                           <p className="text-xs text-ink/70">× {it.quantity}</p>
                         </div>

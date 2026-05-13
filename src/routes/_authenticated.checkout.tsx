@@ -180,18 +180,18 @@ function CheckoutPage() {
                 <div className="space-y-3">
                   <div>
                     <Label className="text-xs uppercase tracking-[0.22em] text-clay">Address</Label>
-                    <Textarea value={address} onChange={(e) => setAddress(e.target.value)} className="mt-2" placeholder="Block, street, unit…" rows={2} />
+                    <Textarea value={address} onChange={(e) => setAddress(e.target.value)} className="mt-2" placeholder="Block, street, unit number" rows={2} />
                   </div>
                   <div className="flex items-end gap-3">
                     <div className="flex-1">
                       <Label className="text-xs uppercase tracking-[0.22em] text-clay">Postal code</Label>
-                      <Input value={postal} onChange={(e) => setPostal(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="6 digits" className="mt-2" />
+                      <Input value={postal} onChange={(e) => setPostal(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="Singapore postal code" className="mt-2" />
                     </div>
                     {address && postal.length === 6 && (
                       <a
                         href={`https://www.google.com/maps/search/?api=1&query=Singapore+${postal}`}
                         target="_blank" rel="noreferrer"
-                        className="inline-flex items-center gap-1 rounded-md border hairline px-3 py-2 text-xs uppercase tracking-[0.22em] text-loam hover:bg-shell"
+                        className="inline-flex h-10 items-center gap-1 rounded-md border hairline bg-shell px-3 py-2 text-xs uppercase tracking-[0.22em] text-loam transition-colors hover:bg-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30"
                       >
                         Verify on Maps <ExternalLink className="size-3" />
                       </a>
@@ -212,7 +212,7 @@ function CheckoutPage() {
                   <Label className="text-xs uppercase tracking-[0.22em] text-clay">Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <button className={cn("mt-2 flex w-full items-center justify-between rounded-md border hairline bg-shell px-3 py-2.5 text-sm", !date && "text-muted-foreground")}>
+                      <button className={cn("mt-2 flex h-10 w-full items-center justify-between rounded-md border hairline bg-shell px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30", !date && "text-muted-foreground")}>
                         {date ? format(date, "EEEE, d MMMM") : "Pick a date"}
                         <CalendarIcon className="size-4 text-clay" />
                       </button>
@@ -242,8 +242,8 @@ function CheckoutPage() {
                         key={s}
                         type="button"
                         onClick={() => setSlot(s)}
-                        className={cn("rounded-md border px-2 py-2 text-xs transition-all",
-                          slot === s ? "border-loam bg-loam text-cream" : "border-ink/15 bg-shell text-ink/80 hover:border-clay/50")}
+                        className={cn("rounded-md border px-2 py-2 text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30",
+                          slot === s ? "border-loam bg-loam text-cream" : "hairline bg-shell text-ink/80 hover:border-clay/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30")}
                       >
                         {s}
                       </button>
@@ -262,7 +262,7 @@ function CheckoutPage() {
                 </div>
                 <div>
                   <Label className="text-xs uppercase tracking-[0.22em] text-clay">Phone</Label>
-                  <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+65 …" className="mt-2" />
+                  <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+65 9123 4567" className="mt-2" />
                 </div>
                 <div className="sm:col-span-2">
                   <Label className="text-xs uppercase tracking-[0.22em] text-clay">Notes (optional)</Label>
@@ -276,7 +276,7 @@ function CheckoutPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
                   <p className="text-sm leading-6 text-ink/70">
-                    These details are for the person receiving the flowers, not the buyer.
+                    This is the person receiving the flowers; it can be different from the buyer.
                   </p>
                 </div>
                 <div>
@@ -285,7 +285,7 @@ function CheckoutPage() {
                 </div>
                 <div>
                   <Label className="text-xs uppercase tracking-[0.22em] text-clay">Recipient phone</Label>
-                  <Input value={recipientPhone} onChange={(e) => setRecipientPhone(e.target.value)} placeholder="+65 ..." className="mt-2" />
+                  <Input value={recipientPhone} onChange={(e) => setRecipientPhone(e.target.value)} placeholder="+65 9123 4567" className="mt-2" />
                 </div>
                 <div className="sm:col-span-2">
                   <Label className="text-xs uppercase tracking-[0.22em] text-clay">Delivery instructions (optional)</Label>
@@ -294,7 +294,7 @@ function CheckoutPage() {
                     onChange={(e) => setDeliveryInstructions(e.target.value)}
                     className="mt-2"
                     rows={2}
-                    placeholder="Concierge, gate code, preferred handover note..."
+                    placeholder="Concierge, gate code, preferred handover note"
                   />
                 </div>
               </div>
@@ -329,7 +329,7 @@ function CheckoutPage() {
                         <p className="text-[11px] text-muted-foreground">{Object.values(l.selectionLabels).join(" · ")}</p>
                       )}
                       <p className="text-[11px] text-muted-foreground">
-                        Note: {l.personalMessage || "NIL"}
+                        Personal message: {l.personalMessage || "NIL"}
                       </p>
                       <p className="text-[11px] text-ink/70">× {l.quantity}</p>
                     </div>
@@ -390,7 +390,7 @@ function FulfillCard({ active, onClick, icon, label, hint }: { active: boolean; 
     <button
       type="button"
       onClick={onClick}
-      className={cn("relative flex flex-col items-start gap-2 rounded-xl border p-4 text-left transition-all",
+      className={cn("relative flex flex-col items-start gap-2 rounded-xl border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30",
         active ? "border-loam bg-loam text-cream shadow-[var(--shadow-soft)]" : "border-ink/15 bg-shell text-ink/80 hover:border-clay/60")}
     >
       <span className={cn("inline-flex size-8 items-center justify-center rounded-full", active ? "bg-cream/15 text-cream" : "bg-clay/10 text-clay")}>{icon}</span>

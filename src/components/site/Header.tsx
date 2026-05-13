@@ -1,5 +1,5 @@
-import { Link, useNavigate } from "@tanstack/react-router";
-import { ShoppingBag, Menu, X, User, LogOut } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ShoppingBag, Menu, X, User } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
@@ -15,15 +15,8 @@ const links = [
 
 export function Header() {
   const { count, setOpen } = useCart();
-  const { session, isAdmin, signOut } = useAuth();
+  const { session, isAdmin } = useAuth();
   const [menu, setMenu] = useState(false);
-  const nav = useNavigate();
-
-  const handleSignOut = async () => {
-    setMenu(false);
-    await signOut();
-    nav({ to: "/" });
-  };
 
   return (
     <header className="sticky top-0 z-40 border-b hairline bg-cream/85 text-ink backdrop-blur-md">
@@ -59,18 +52,8 @@ export function Header() {
               className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.28em] text-ink/65 transition-colors hover:text-loam"
               activeProps={{ className: "text-loam" }}>
               <User className="size-3.5" />
-              {session ? (isAdmin ? "Admin" : "Account") : "Sign in"}
+              {session ? (isAdmin ? "Admin" : "Account") : "Sign In"}
             </Link>
-            {session && (
-              <button
-                type="button"
-                onClick={handleSignOut}
-                className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.28em] text-ink/55 transition-colors hover:text-loam"
-              >
-                <LogOut className="size-3.5" />
-                Sign out
-              </button>
-            )}
           </nav>
           <button onClick={() => setOpen(true)}
             className="flex items-center gap-2 text-[11px] uppercase tracking-[0.28em] text-ink/75 transition-colors hover:text-loam"
@@ -93,17 +76,8 @@ export function Header() {
             ))}
             <Link to={session ? (isAdmin ? "/admin" : "/account") : "/login"} onClick={() => setMenu(false)}
               className="border-b hairline py-3 text-base text-ink/85">
-              {session ? (isAdmin ? "Admin" : "Account") : "Sign in"}
+              {session ? (isAdmin ? "Admin" : "Account") : "Sign In"}
             </Link>
-            {session && (
-              <button
-                type="button"
-                onClick={handleSignOut}
-                className="border-b hairline py-3 text-left text-base text-ink/85"
-              >
-                Sign out
-              </button>
-            )}
           </nav>
         </div>
       </div>

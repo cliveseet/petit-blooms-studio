@@ -218,7 +218,7 @@ function Pdp({ product }: { product: Product }) {
                 htmlFor="personal-message"
                 className="text-[11px] font-medium uppercase tracking-[0.28em] text-loam"
               >
-                Personal message for handwritten note
+                Personal message
               </Label>
               <Textarea
                 id="personal-message"
@@ -227,10 +227,10 @@ function Pdp({ product }: { product: Product }) {
                 className="mt-3 bg-shell"
                 rows={3}
                 maxLength={240}
-                placeholder="Write your note here, or leave blank for NIL."
+                placeholder="A note for your recipient — leave blank if not required."
               />
               <p className="mt-1.5 text-[11px] text-muted-foreground">
-                Leave blank if no handwritten note is needed.
+                Denise will handwrite this on a small note card.
               </p>
             </div>
 
@@ -413,7 +413,7 @@ function OptionGroupControl({
               type="button"
               onClick={() => onChange(c.value)}
               className={cn(
-                "inline-flex items-center gap-2 rounded-md border px-3.5 py-2 text-sm transition-all",
+                "inline-flex items-center gap-2 rounded-md border px-3.5 py-2 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30",
                 active
                   ? "border-loam bg-loam text-cream"
                   : "border-ink/15 bg-shell text-ink/80 hover:border-clay/50 hover:text-loam"
@@ -421,7 +421,7 @@ function OptionGroupControl({
             >
               {c.label}
               {typeof c.priceDelta === "number" && c.priceDelta !== 0 && (
-                <span className="text-xs text-muted-foreground">
+                <span className={cn("text-xs", active ? "text-cream/75" : "text-muted-foreground")}>
                   +{formatSGD(c.priceDelta)}
                 </span>
               )}
@@ -447,7 +447,7 @@ function BookingCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "group relative flex flex-col items-start gap-2 rounded-xl border p-4 text-left transition-all",
+        "group relative flex flex-col items-start gap-2 rounded-xl border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30",
         active
           ? "border-loam bg-loam text-cream shadow-[var(--shadow-soft)]"
           : "border-ink/15 bg-shell text-ink/80 hover:-translate-y-0.5 hover:border-clay/60 hover:text-loam"
@@ -517,7 +517,7 @@ function SegmentChip({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex flex-col items-center gap-0.5 rounded-md border px-3 py-2.5 transition-all",
+        "flex flex-col items-center gap-0.5 rounded-md border px-3 py-2.5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30",
         active
           ? "border-loam bg-loam text-cream"
           : "border-ink/15 bg-shell text-ink/80 hover:border-clay/50 hover:text-loam"
@@ -558,7 +558,7 @@ function SwatchPill({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-3.5 text-sm transition-all",
+        "inline-flex items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-3.5 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30",
         active
           ? "border-loam bg-loam text-cream"
           : "border-ink/15 bg-shell text-ink/80 hover:border-clay/50 hover:text-loam"

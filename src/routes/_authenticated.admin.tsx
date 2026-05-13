@@ -1,5 +1,5 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { CalendarDays, ChevronRight, Loader2, RefreshCw } from "lucide-react";
+import { createFileRoute, Link, Navigate, useNavigate } from "@tanstack/react-router";
+import { CalendarDays, ChevronLeft, ChevronRight, Loader2, LogOut, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -101,10 +101,11 @@ function formatDate(date: string, time: string) {
 }
 
 function AdminPage() {
-  const { isAdmin, loading } = useAuth();
+  const { isAdmin, loading, signOut } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const nav = useNavigate();
 
   const counts = useMemo(
     () => ({
@@ -158,6 +159,11 @@ function AdminPage() {
     toast.success(`Marked ${statusLabel[status].toLowerCase()}`);
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    nav({ to: "/" });
+  };
+
   if (loading) {
     return (
       <div className="container-page py-24 text-center text-sm text-muted-foreground">Loading…</div>
@@ -171,6 +177,13 @@ function AdminPage() {
       <div className="container-page py-12 md:py-16">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
+            <Link
+              to="/"
+              className="mb-6 inline-flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-clay hover:text-loam"
+            >
+              <ChevronLeft className="size-3.5" />
+              Back to site
+            </Link>
             <p className="text-[11px] uppercase tracking-[0.34em] text-clay">Florist</p>
             <h1 className="mt-3 font-display text-4xl text-loam md:text-5xl">
               Order book<span className="font-serif-italic text-clay">.</span>
@@ -180,20 +193,31 @@ function AdminPage() {
               fulfilment status.
             </p>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => void refresh()}
-            disabled={ordersLoading}
-            className="border-ink/15 bg-shell text-xs uppercase tracking-[0.22em] text-loam hover:bg-cream"
-          >
-            {ordersLoading ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <RefreshCw className="size-4" />
-            )}
-            Refresh
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void refresh()}
+              disabled={ordersLoading}
+              className="text-xs uppercase tracking-[0.22em]"
+            >
+              {ordersLoading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <RefreshCw className="size-4" />
+              )}
+              Refresh
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleSignOut}
+              className="text-xs uppercase tracking-[0.22em]"
+            >
+              <LogOut className="size-4" />
+              Sign out
+            </Button>
+          </div>
         </div>
 
         <div className="mt-8 grid gap-3 sm:grid-cols-3">

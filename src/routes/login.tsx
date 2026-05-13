@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,12 +21,23 @@ function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [inlineMessage, setInlineMessage] = useState<string | null>(null);
   const [resetMessage, setResetMessage] = useState<string | null>(null);
-  const { resetPasswordForEmail, signIn, signInWithGoogle, signUp, session } = useAuth();
+  const { resetPasswordForEmail, signIn, signInWithGoogle, signUp, session, isAdmin, loading } = useAuth();
   const nav = useNavigate();
 
   useEffect(() => {
-    if (session) nav({ to: "/account" });
-  }, [session, nav]);
+    if (session && !loading) nav({ to: isAdmin ? "/admin" : "/account" });
+  }, [session, isAdmin, loading, nav]);
+
+  const destinationForUser = async (userId: string): Promise<"/admin" | "/account"> => {
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    return data?.role === "admin" ? "/admin" : "/account";
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +53,7 @@ function LoginPage() {
       toast.error(message);
     } else if (res.session) {
       toast.success(mode === "signup" ? "Account created." : "Welcome back.");
-      nav({ to: "/account" });
+      nav({ to: await destinationForUser(res.session.user.id) });
     } else if (mode === "signup") {
       toast.success("Check your inbox to confirm your email.");
     } else {
@@ -179,7 +191,7 @@ function LoginPage() {
                 variant="outline"
                 disabled={busy}
                 onClick={googleSignIn}
-                className="w-full border-ink/15 bg-cream text-loam hover:bg-shell"
+                className="w-full text-loam"
               >
                 <span className="mr-2 inline-flex size-5 items-center justify-center rounded-full border border-clay/40 font-display text-xs text-clay">
                   G

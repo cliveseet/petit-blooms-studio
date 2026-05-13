@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import aboutHands from "@/assets/about-hands.jpg";
 import aboutGiving from "@/assets/about-giving.jpg";
+import { ArrowUpRight, Clock, MapPin, Truck } from "lucide-react";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -84,6 +85,76 @@ function AboutPage() {
               ))}
             </dl>
           </div>
+        </div>
+      </section>
+
+      <div className="container-page"><div className="divider-rule" /></div>
+
+      {/* Delivery + collection */}
+      <section className="container-page py-20 md:py-28">
+        <div className="mb-14 max-w-2xl">
+          <p className="text-[11px] uppercase tracking-[0.34em] text-clay">Delivery notes</p>
+          <h2 className="mt-4 font-display text-4xl text-loam md:text-5xl">
+            Delivery &amp;
+            <span className="font-serif-italic text-clay"> self-collection</span>
+          </h2>
+          <p className="mt-4 text-sm text-ink/70">
+            For every bouquet in the shop — fresh, preserved, or accessory.
+          </p>
+        </div>
+
+        <div className="mb-10 flex gap-5 rounded-2xl border-l-2 border-clay/60 bg-shell px-6 py-5">
+          <Clock className="mt-1 size-5 flex-none text-clay" />
+          <div className="text-sm text-ink/80">
+            <p className="font-display text-base text-loam">Lead time for delivery &amp; collection</p>
+            <p className="mt-2">
+              Please order at least <strong className="text-loam">2 days before</strong> the
+              intended delivery or collection date. For urgent requests, message{" "}
+              <strong className="text-loam">@petit.blooms</strong> on Instagram.
+              As bouquets are made fresh,{" "}
+              <strong className="text-loam">no cancellations</strong> within 24 hours
+              of delivery or collection.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <article className="rounded-2xl border hairline bg-shell p-8 md:p-10">
+            <div className="flex items-center gap-3">
+              <span className="inline-flex size-10 items-center justify-center rounded-full bg-clay/10 text-clay">
+                <Truck className="size-4" />
+              </span>
+              <h3 className="font-display text-2xl text-loam">Delivery</h3>
+            </div>
+            <ul className="mt-6 space-y-3 text-sm text-ink/80">
+              <li className="flex gap-3"><span className="text-clay">·</span> From SGD 20, estimated by distance at checkout.</li>
+              <li className="flex gap-3"><span className="text-clay">·</span> All delivery bouquets are protected with honeycomb paper.</li>
+              <li className="flex gap-3"><span className="text-clay">·</span> Complimentary delivery for orders above SGD 180.</li>
+            </ul>
+          </article>
+
+          <article className="rounded-2xl border hairline bg-shell p-8 md:p-10">
+            <div className="flex items-center gap-3">
+              <span className="inline-flex size-10 items-center justify-center rounded-full bg-clay/10 text-clay">
+                <MapPin className="size-4" />
+              </span>
+              <h3 className="font-display text-2xl text-loam">Self-collection</h3>
+            </div>
+            <p className="mt-6 text-sm leading-relaxed text-ink/80">
+              Bishan Street 12, Block 111, Singapore 570111 — a 7-minute walk
+              from Bishan MRT (CC15). Take Exit C, next to 7-Eleven, then the
+              straight path down to Raffles Institution. Crossing the road
+              and zebra crossing brings you to 570111.
+            </p>
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Block+111+Bishan+Street+12+Singapore+570111"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-7 inline-flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-loam underline underline-offset-4 hover:text-clay"
+            >
+              Open in Google Maps <ArrowUpRight className="size-3.5" />
+            </a>
+          </article>
         </div>
       </section>
 
