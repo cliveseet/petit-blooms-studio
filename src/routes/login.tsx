@@ -20,17 +20,21 @@ function LoginPage() {
   const { signIn, signUp, session } = useAuth();
   const nav = useNavigate();
 
-  useEffect(() => { if (session) nav({ to: "/account" }); }, [session, nav]);
+  useEffect(() => {
+    if (session) nav({ to: "/account" });
+  }, [session, nav]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const res = mode === "signin"
-      ? await signIn(email, password)
-      : await signUp(email, password, name);
+    const res =
+      mode === "signin" ? await signIn(email, password) : await signUp(email, password, name);
     setBusy(false);
     if (res.error) {
       toast.error(res.error);
+    } else if (res.session) {
+      toast.success(mode === "signup" ? "Account created." : "Welcome back.");
+      nav({ to: "/account" });
     } else if (mode === "signup") {
       toast.success("Check your inbox to confirm your email.");
     } else {
@@ -68,24 +72,57 @@ function LoginPage() {
           <form onSubmit={submit} className="mt-6 space-y-4">
             {mode === "signup" && (
               <div>
-                <Label htmlFor="name" className="text-xs uppercase tracking-[0.22em] text-clay">Full name</Label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required className="mt-2" />
+                <Label htmlFor="name" className="text-xs uppercase tracking-[0.22em] text-clay">
+                  Full name
+                </Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  className="mt-2"
+                />
               </div>
             )}
             <div>
-              <Label htmlFor="email" className="text-xs uppercase tracking-[0.22em] text-clay">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="mt-2" />
+              <Label htmlFor="email" className="text-xs uppercase tracking-[0.22em] text-clay">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="mt-2"
+              />
             </div>
             <div>
-              <Label htmlFor="password" className="text-xs uppercase tracking-[0.22em] text-clay">Password</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="mt-2" />
+              <Label htmlFor="password" className="text-xs uppercase tracking-[0.22em] text-clay">
+                Password
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className="mt-2"
+              />
             </div>
-            <Button type="submit" disabled={busy} className="w-full bg-loam text-cream hover:bg-ink">
+            <Button
+              type="submit"
+              disabled={busy}
+              className="w-full bg-loam text-cream hover:bg-ink"
+            >
               {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
             </Button>
           </form>
           <p className="mt-5 text-center text-xs text-muted-foreground">
-            <Link to="/" className="underline hover:text-loam">Back to petit blooms</Link>
+            <Link to="/" className="underline hover:text-loam">
+              Back to petit blooms
+            </Link>
           </p>
         </div>
       </div>
