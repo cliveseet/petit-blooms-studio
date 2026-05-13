@@ -155,6 +155,9 @@ function ShopPage() {
         </div>
       </section>
     </div>
+  );
+}
+
 function FilterGroup<T extends string>({ label, options, value, onChange }: {
   label: string;
   options: Array<{ id: T; label: string }>;
