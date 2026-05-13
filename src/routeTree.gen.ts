@@ -17,6 +17,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
+import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
 import { Route as AuthConfirmRouteImport } from './routes/auth.confirm'
 import { Route as AuthenticatedCheckoutRouteImport } from './routes/_authenticated.checkout'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
@@ -61,6 +62,11 @@ const ShopSlugRoute = ShopSlugRouteImport.update({
   path: '/shop/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/auth/reset-password',
+  path: '/auth/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthConfirmRoute = AuthConfirmRouteImport.update({
   id: '/auth/confirm',
   path: '/auth/confirm',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/checkout': typeof AuthenticatedCheckoutRoute
   '/auth/confirm': typeof AuthConfirmRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/': typeof ShopIndexRoute
 }
@@ -105,6 +112,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/checkout': typeof AuthenticatedCheckoutRoute
   '/auth/confirm': typeof AuthConfirmRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop': typeof ShopIndexRoute
 }
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/checkout': typeof AuthenticatedCheckoutRoute
   '/auth/confirm': typeof AuthConfirmRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/': typeof ShopIndexRoute
 }
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/checkout'
     | '/auth/confirm'
+    | '/auth/reset-password'
     | '/shop/$slug'
     | '/shop/'
   fileRoutesByTo: FileRoutesByTo
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/checkout'
     | '/auth/confirm'
+    | '/auth/reset-password'
     | '/shop/$slug'
     | '/shop'
   id:
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/checkout'
     | '/auth/confirm'
+    | '/auth/reset-password'
     | '/shop/$slug'
     | '/shop/'
   fileRoutesById: FileRoutesById
@@ -174,6 +186,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ServicesRoute: typeof ServicesRoute
   AuthConfirmRoute: typeof AuthConfirmRoute
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   ShopSlugRoute: typeof ShopSlugRoute
   ShopIndexRoute: typeof ShopIndexRoute
 }
@@ -236,6 +249,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/reset-password': {
+      id: '/auth/reset-password'
+      path: '/auth/reset-password'
+      fullPath: '/auth/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/confirm': {
       id: '/auth/confirm'
       path: '/auth/confirm'
@@ -291,6 +311,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ServicesRoute: ServicesRoute,
   AuthConfirmRoute: AuthConfirmRoute,
+  AuthResetPasswordRoute: AuthResetPasswordRoute,
   ShopSlugRoute: ShopSlugRoute,
   ShopIndexRoute: ShopIndexRoute,
 }

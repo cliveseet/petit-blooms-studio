@@ -12,6 +12,7 @@ type AuthCtx = {
   user: User | null;
   isAdmin: boolean;
   loading: boolean;
+  resetPasswordForEmail: (email: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<AuthResult>;
   signUp: (email: string, password: string, fullName: string) => Promise<AuthResult>;
   signOut: () => Promise<void>;
@@ -19,15 +20,18 @@ type AuthCtx = {
 
 const Ctx = createContext<AuthCtx | null>(null);
 
-function getAuthRedirectTo() {
+function getAuthRedirectTo(path: string, next?: string) {
   if (typeof window === "undefined") return undefined;
 
   const url = new URL(window.location.origin);
   if (url.hostname === "127.0.0.1" || url.hostname === "::1") {
     url.hostname = "localhost";
   }
+  url.pathname = path;
+  url.search = next ? `next=${encodeURIComponent(next)}` : "";
+  url.hash = "";
 
-  return `${url.origin}/auth/confirm?next=/account`;
+  return url.toString();
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -95,11 +99,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
       options: {
-        emailRedirectTo: getAuthRedirectTo(),
+        emailRedirectTo: getAuthRedirectTo("/auth/confirm", "/account"),
         data: { full_name: fullName },
       },
     });
     return { error: error?.message ?? null, session: data.session };
+  };
+  const resetPasswordForEmail: AuthCtx["resetPasswordForEmail"] = async (email) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: getAuthRedirectTo("/auth/reset-password"),
+    });
+    return { error: error?.message ?? null };
   };
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -107,7 +117,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <Ctx.Provider
-      value={{ session, user: session?.user ?? null, isAdmin, loading, signIn, signUp, signOut }}
+      value={{
+        session,
+        user: session?.user ?? null,
+        isAdmin,
+        loading,
+        resetPasswordForEmail,
+        signIn,
+        signUp,
+        signOut,
+      }}
     >
       {children}
     </Ctx.Provider>

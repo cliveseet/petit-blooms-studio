@@ -17,7 +17,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
-  const { signIn, signUp, session } = useAuth();
+  const { resetPasswordForEmail, signIn, signUp, session } = useAuth();
   const nav = useNavigate();
 
   useEffect(() => {
@@ -41,6 +41,21 @@ function LoginPage() {
       toast.success("Welcome back.");
       nav({ to: "/account" });
     }
+  };
+
+  const sendReset = async () => {
+    if (!email) {
+      toast.error("Enter your email first.");
+      return;
+    }
+    setBusy(true);
+    const res = await resetPasswordForEmail(email);
+    setBusy(false);
+    if (res.error) {
+      toast.error(res.error);
+      return;
+    }
+    toast.success("Password reset email sent.");
   };
 
   return (
@@ -119,6 +134,16 @@ function LoginPage() {
               {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
             </Button>
           </form>
+          {mode === "signin" && (
+            <button
+              type="button"
+              onClick={sendReset}
+              disabled={busy}
+              className="mt-4 w-full text-center text-xs uppercase tracking-[0.22em] text-clay underline-offset-4 hover:text-loam hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Forgot password?
+            </button>
+          )}
           <p className="mt-5 text-center text-xs text-muted-foreground">
             <Link to="/" className="underline hover:text-loam">
               Back to petit blooms

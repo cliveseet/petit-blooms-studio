@@ -1,12 +1,10 @@
 -- Create a confirmed admin user for local QA of authenticated florist workflows.
 
-CREATE SCHEMA IF NOT EXISTS extensions;
-CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
-
 DO $$
 DECLARE
   test_user_id UUID := '11111111-1111-4111-8111-111111111111';
   test_email TEXT := 'admin@test.com';
+  test_password_hash TEXT := '$2b$12$6cWtKDX.2xoOSxr4FdUizexLV15BQuaSTAI4BnG/l6UzTPzio6a5e';
 BEGIN
   SELECT id
   INTO test_user_id
@@ -43,7 +41,7 @@ BEGIN
     'authenticated',
     'authenticated',
     test_email,
-    crypt('Test1234!', gen_salt('bf')),
+    test_password_hash,
     now(),
     now(),
     '{"provider":"email","providers":["email"]}'::jsonb,

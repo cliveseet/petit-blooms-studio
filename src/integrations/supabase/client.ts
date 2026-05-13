@@ -27,6 +27,12 @@ function createSupabaseClient() {
     throw new Error(message);
   }
 
+  if (import.meta.env.DEV && typeof window !== "undefined") {
+    console.info(
+      `[Supabase runtime env] VITE_SUPABASE_URL=${SUPABASE_URL} VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}`,
+    );
+  }
+
   return createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
       storage: typeof window !== "undefined" ? localStorage : undefined,
