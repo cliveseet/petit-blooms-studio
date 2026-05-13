@@ -84,62 +84,22 @@ function ShopPage() {
       <section className="container-page grid gap-12 py-16 md:grid-cols-12 md:gap-12 md:pb-28">
         <aside className="md:col-span-3">
           <div className="md:sticky md:top-28 space-y-10">
-            <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-clay">
-                Category
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {categories.map((c) => {
-                  const active = category === c.id;
-                  return (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() =>
-                        navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, category: c.id }) })
-                      }
-                      className={cn(
-                        "rounded-md border px-3.5 py-2 text-xs uppercase tracking-[0.18em] transition-all",
-                        active
-                          ? "border-loam bg-loam text-cream"
-                          : "border-ink/15 bg-shell text-ink/70 hover:border-clay/50 hover:text-loam"
-                      )}
-                    >
-                      {c.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-clay">
-                Occasion
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {occasions.map((o) => {
-                  const active = occasion === o.id;
-                  return (
-                    <button
-                      key={o.id}
-                      type="button"
-                      onClick={() =>
-                        navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, occasion: o.id }) })
-                      }
-                      className={cn(
-                        "rounded-md border px-3.5 py-2 text-xs uppercase tracking-[0.18em] transition-all",
-                        active
-                          ? "border-loam bg-loam text-cream"
-                          : "border-ink/15 bg-shell text-ink/70 hover:border-clay/50 hover:text-loam"
-                      )}
-                    >
-                      {o.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
+            <FilterGroup
+              label="Category"
+              options={categories}
+              value={category}
+              onChange={(v) =>
+                navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, category: v as typeof category }) })
+              }
+            />
+            <FilterGroup
+              label="Occasion"
+              options={occasions}
+              value={occasion}
+              onChange={(v) =>
+                navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, occasion: v as typeof occasion }) })
+              }
+            />
             <p className="text-xs text-muted-foreground">
               {filtered.length} {filtered.length === 1 ? "piece" : "pieces"} ·
               <span className="ml-1 text-clay">curated weekly</span>
@@ -194,6 +154,48 @@ function ShopPage() {
           )}
         </div>
       </section>
+    </div>
+  );
+}
+
+function FilterGroup<T extends string>({ label, options, value, onChange }: {
+  label: string;
+  options: Array<{ id: T; label: string }>;
+  value: T;
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div>
+      <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-clay">{label}</p>
+      <ul className="mt-4 space-y-1">
+        {options.map((o) => {
+          const active = value === o.id;
+          return (
+            <li key={o.id}>
+              <button
+                type="button"
+                onClick={() => onChange(o.id)}
+                className={cn(
+                  "group flex w-full items-center justify-between gap-3 border-b border-transparent py-2 text-left text-sm transition-all",
+                  active ? "text-loam" : "text-ink/60 hover:text-loam"
+                )}
+              >
+                <span className="flex items-center gap-3">
+                  <span
+                    className={cn(
+                      "block h-px transition-all",
+                      active ? "w-6 bg-loam" : "w-3 bg-ink/20 group-hover:w-5 group-hover:bg-clay"
+                    )}
+                  />
+                  <span className={cn("font-display tracking-tight", active && "font-medium")}>
+                    {o.label}
+                  </span>
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
