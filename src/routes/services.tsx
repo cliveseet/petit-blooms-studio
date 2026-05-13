@@ -134,22 +134,11 @@ function ServicesPage() {
               </a>
             </div>
 
-            {/* Lead time as inline note, not a band */}
-            <div className="mt-10 flex gap-5 rounded-2xl border-l-2 border-clay/60 bg-cream px-6 py-5">
-              <Clock className="mt-1 size-5 flex-none text-clay" />
-              <div className="text-sm text-ink/80">
-                <p className="font-display text-base text-loam">Lead time</p>
-                <p className="mt-2">
-                  Please order at least <strong className="text-loam">2 days
-                  before</strong> the intended delivery or collection. For
-                  urgent requests, message{" "}
-                  <strong className="text-loam">@petit.blooms</strong> on
-                  Instagram. As bouquets are made fresh,{" "}
-                  <strong className="text-loam">no cancellations</strong> within
-                  24 hours of delivery or collection.
-                </p>
-              </div>
-            </div>
+            {/* Wedding-specific note about advance booking */}
+            <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
+              Wedding pieces are built bespoke — please reach out early so we
+              can plan your palette, blooms and timing together.
+            </p>
           </div>
         </div>
       </section>
@@ -164,6 +153,25 @@ function ServicesPage() {
             Delivery &amp;
             <span className="font-serif-italic text-clay"> self-collection</span>
           </h2>
+          <p className="mt-4 text-sm text-ink/70">
+            Applies to every bouquet in the shop — fresh, preserved, or accessory.
+          </p>
+        </div>
+
+        {/* Lead-time notice — clearly framed as a delivery/pickup note */}
+        <div className="mb-10 flex gap-5 rounded-2xl border-l-2 border-clay/60 bg-shell px-6 py-5">
+          <Clock className="mt-1 size-5 flex-none text-clay" />
+          <div className="text-sm text-ink/80">
+            <p className="font-display text-base text-loam">Lead time for delivery &amp; collection</p>
+            <p className="mt-2">
+              Please order at least <strong className="text-loam">2 days before</strong> the
+              intended delivery or collection date. For urgent requests, message{" "}
+              <strong className="text-loam">@petit.blooms</strong> on Instagram.
+              As bouquets are made fresh,{" "}
+              <strong className="text-loam">no cancellations</strong> within 24 hours
+              of delivery or collection.
+            </p>
+          </div>
         </div>
         <div className="grid gap-6 md:grid-cols-2">
           <article className="rounded-2xl border hairline bg-shell p-8 md:p-10">

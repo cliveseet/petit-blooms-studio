@@ -47,30 +47,32 @@ function AboutPage() {
           </div>
           <div className="space-y-5 text-ink/85 md:col-span-6 md:col-start-7 md:pt-6">
             <p className="font-serif-italic text-2xl leading-snug text-loam">
-              Hello — I&apos;m Denise, a uni student who loves flowers.
+              Hello! I&apos;m Denise, a struggling uni student who loves flowers :&quot;)
             </p>
             <p>
-              <em>petit blooms</em> began with a simple, unforgettable moment:
+              <em>petit.eblooms</em> began with a single, unforgettable moment —
               receiving my first bouquet on Valentine&apos;s Day. I never
-              expected flowers to leave such a lasting impression — but that
-              one bouquet sparked a passion that grew into something more.
+              imagined a few stems wrapped in paper could leave such a quiet,
+              lasting impression. That bouquet became the seed of something
+              softer, slower, more intentional.
             </p>
             <p>
-              I believe flowers should be more than just gifts. They should be
-              thoughtful, personal and full of meaning. That&apos;s why every
-              arrangement I create is tailored to the recipient — their
-              favourite blooms, colours and unique style.
+              I believe flowers should never feel like a transaction. Every
+              arrangement I tie is built around the person it&apos;s meant for —
+              their colours, their season, the way they hold a moment. Each
+              bouquet is made fresh, by hand, and only ever to order.
             </p>
             <p>
-              I am constantly honing my craft through WSQ courses to make each
-              bouquet even more considered. It&apos;s an honour to be part of
-              your moments, big or small.
+              I&apos;m WSQ-trained and constantly learning — refining my craft
+              between deadlines and lectures so each piece feels a little more
+              considered than the last. Thank you for letting petit.eblooms be
+              part of your moments, big or small.
             </p>
 
             <dl className="mt-10 grid grid-cols-3 gap-6 border-t hairline pt-8">
               {[
-                { k: "WSQ", v: "Trained" },
-                { k: "100%", v: "Made to order" },
+                { k: "WSQ", v: "Trained florist" },
+                { k: "Made", v: "Fresh, to order" },
                 { k: "SG", v: "Hand-delivered" },
               ].map((s) => (
                 <div key={s.k}>
