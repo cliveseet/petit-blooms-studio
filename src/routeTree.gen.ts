@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as BespokeRouteImport } from './routes/bespoke'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
@@ -36,6 +37,11 @@ const LoginRoute = LoginRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BespokeRoute = BespokeRouteImport.update({
+  id: '/bespoke',
+  path: '/bespoke',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -91,6 +97,7 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/bespoke': typeof BespokeRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/services': typeof ServicesRoute
@@ -105,6 +112,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/bespoke': typeof BespokeRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/services': typeof ServicesRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/about': typeof AboutRoute
+  '/bespoke': typeof BespokeRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/services': typeof ServicesRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/bespoke'
     | '/contact'
     | '/login'
     | '/services'
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/bespoke'
     | '/contact'
     | '/login'
     | '/services'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/about'
+    | '/bespoke'
     | '/contact'
     | '/login'
     | '/services'
@@ -182,6 +194,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AboutRoute: typeof AboutRoute
+  BespokeRoute: typeof BespokeRoute
   ContactRoute: typeof ContactRoute
   LoginRoute: typeof LoginRoute
   ServicesRoute: typeof ServicesRoute
@@ -212,6 +225,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bespoke': {
+      id: '/bespoke'
+      path: '/bespoke'
+      fullPath: '/bespoke'
+      preLoaderRoute: typeof BespokeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -307,6 +327,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AboutRoute: AboutRoute,
+  BespokeRoute: BespokeRoute,
   ContactRoute: ContactRoute,
   LoginRoute: LoginRoute,
   ServicesRoute: ServicesRoute,

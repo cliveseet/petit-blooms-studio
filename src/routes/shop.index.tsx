@@ -1,18 +1,23 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
-import {
-  products,
-  categoryLabels,
-  occasionLabels,
-  type Category,
-  type Occasion,
-} from "@/lib/products";
+import { categoryLabels, occasionLabels, type Category, type Occasion } from "@/lib/products";
 import { cn } from "@/lib/utils";
+import { useMenuProducts } from "@/hooks/use-menu-products";
 
 const searchSchema = z.object({
   category: z.enum(["all", "fresh", "preserved", "accessories"]).catch("all"),
   occasion: z
-    .enum(["all", "celebration", "anniversary", "birthday", "get-well", "wedding"])
+    .enum([
+      "all",
+      "romance",
+      "birthday",
+      "sympathy",
+      "wedding",
+      "everyday",
+      "celebration",
+      "anniversary",
+      "get-well",
+    ])
     .catch("all"),
 });
 
@@ -39,11 +44,11 @@ export const Route = createFileRoute("/shop/")({
 function ShopPage() {
   const { category, occasion } = Route.useSearch();
   const navigate = useNavigate({ from: "/shop/" });
+  const { products, loading, error } = useMenuProducts();
 
   const filtered = products.filter((p) => {
     if (category !== "all" && p.category !== category) return false;
-    if (occasion !== "all" && !p.occasions.includes(occasion as Occasion))
-      return false;
+    if (occasion !== "all" && !p.occasions.includes(occasion as Occasion)) return false;
     return true;
   });
 
@@ -56,11 +61,14 @@ function ShopPage() {
 
   const occasions: Array<{ id: "all" | Occasion; label: string }> = [
     { id: "all", label: "Any occasion" },
+    { id: "romance", label: occasionLabels.romance },
+    { id: "birthday", label: occasionLabels.birthday },
+    { id: "sympathy", label: occasionLabels.sympathy },
+    { id: "wedding", label: occasionLabels.wedding },
+    { id: "everyday", label: occasionLabels.everyday },
     { id: "celebration", label: occasionLabels.celebration },
     { id: "anniversary", label: occasionLabels.anniversary },
-    { id: "birthday", label: occasionLabels.birthday },
     { id: "get-well", label: occasionLabels["get-well"] },
-    { id: "wedding", label: occasionLabels.wedding },
   ];
 
   return (
@@ -73,12 +81,13 @@ function ShopPage() {
           <span className="font-serif-italic text-clay"> petit blooms.</span>
         </h1>
         <p className="mx-auto mt-6 max-w-xl text-ink/75">
-          Choose a piece — then make it yours. Sizes, colours and
-          requests are set on the next page.
+          Choose a piece — then make it yours. Sizes, colours and requests are set on the next page.
         </p>
       </section>
 
-      <div className="container-page"><div className="divider-rule" /></div>
+      <div className="container-page">
+        <div className="divider-rule" />
+      </div>
 
       {/* Filters + grid */}
       <section className="container-page grid gap-12 py-16 md:grid-cols-12 md:gap-12 md:pb-28">
@@ -89,7 +98,12 @@ function ShopPage() {
               options={categories}
               value={category}
               onChange={(v) =>
-                navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, category: v as typeof category }) })
+                navigate({
+                  search: (prev: z.infer<typeof searchSchema>) => ({
+                    ...prev,
+                    category: v as typeof category,
+                  }),
+                })
               }
             />
             <FilterGroup
@@ -97,18 +111,30 @@ function ShopPage() {
               options={occasions}
               value={occasion}
               onChange={(v) =>
-                navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, occasion: v as typeof occasion }) })
+                navigate({
+                  search: (prev: z.infer<typeof searchSchema>) => ({
+                    ...prev,
+                    occasion: v as typeof occasion,
+                  }),
+                })
               }
             />
             <p className="text-xs text-muted-foreground">
               {filtered.length} {filtered.length === 1 ? "piece" : "pieces"} ·
               <span className="ml-1 text-clay">curated weekly</span>
             </p>
+            {error && (
+              <p className="text-xs leading-5 text-muted-foreground">
+                Live menu edits are unavailable right now; showing the local catalogue.
+              </p>
+            )}
           </div>
         </aside>
 
         <div className="md:col-span-9">
-          {filtered.length === 0 ? (
+          {loading && filtered.length === 0 ? (
+            <p className="py-20 text-center text-muted-foreground">Loading the menu…</p>
+          ) : filtered.length === 0 ? (
             <p className="py-20 text-center text-muted-foreground">
               No pieces match these filters.
             </p>
@@ -158,7 +184,12 @@ function ShopPage() {
   );
 }
 
-function FilterGroup<T extends string>({ label, options, value, onChange }: {
+function FilterGroup<T extends string>({
+  label,
+  options,
+  value,
+  onChange,
+}: {
   label: string;
   options: Array<{ id: T; label: string }>;
   value: T;
@@ -177,14 +208,14 @@ function FilterGroup<T extends string>({ label, options, value, onChange }: {
                 onClick={() => onChange(o.id)}
                 className={cn(
                   "group flex w-full items-center justify-between gap-3 border-b border-transparent py-2 text-left text-sm transition-all",
-                  active ? "text-loam" : "text-ink/60 hover:text-loam"
+                  active ? "text-loam" : "text-ink/60 hover:text-loam",
                 )}
               >
                 <span className="flex items-center gap-3">
                   <span
                     className={cn(
                       "block h-px transition-all",
-                      active ? "w-6 bg-loam" : "w-3 bg-ink/20 group-hover:w-5 group-hover:bg-clay"
+                      active ? "w-6 bg-loam" : "w-3 bg-ink/20 group-hover:w-5 group-hover:bg-clay",
                     )}
                   />
                   <span className={cn("font-display tracking-tight", active && "font-medium")}>

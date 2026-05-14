@@ -8,8 +8,8 @@ export function Footer() {
         <div className="md:col-span-2">
           <p className="font-display text-3xl text-cream">petit blooms</p>
           <p className="mt-3 max-w-sm text-sm text-cream/70">
-            Build-to-order florals from a WSQ-trained florist in Singapore.
-            Where flowers speak the language of love.
+            Build-to-order florals from a WSQ-trained florist in Singapore. Where flowers speak the
+            language of love.
           </p>
         </div>
 
@@ -60,10 +60,21 @@ export function Footer() {
         <div className="container-page flex flex-col gap-3 py-6 text-xs text-cream/60 md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} petit blooms. Made with love in Singapore.</p>
           <nav className="flex gap-5">
-            <Link to="/shop" className="hover:text-cream">Shop</Link>
-            <Link to="/services" className="hover:text-cream">Weddings &amp; Events</Link>
-            <Link to="/about" className="hover:text-cream">About</Link>
-            <Link to="/contact" className="hover:text-cream">Contact</Link>
+            <Link to="/shop" className="hover:text-cream">
+              Ready Bouquets
+            </Link>
+            <Link to="/bespoke" className="hover:text-cream">
+              Custom Bouquet
+            </Link>
+            <Link to="/services" className="hover:text-cream">
+              Weddings &amp; Events
+            </Link>
+            <Link to="/about" className="hover:text-cream">
+              About
+            </Link>
+            <Link to="/contact" className="hover:text-cream">
+              Contact
+            </Link>
           </nav>
         </div>
       </div>

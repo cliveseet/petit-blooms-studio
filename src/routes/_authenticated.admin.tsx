@@ -1,5 +1,14 @@
 import { createFileRoute, Link, Navigate, useNavigate } from "@tanstack/react-router";
-import { CalendarDays, ChevronLeft, ChevronRight, Loader2, LogOut, RefreshCw } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  Flower2,
+  Loader2,
+  LogOut,
+  RefreshCw,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -14,6 +23,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { MenuManagement } from "@/components/admin/MenuManagement";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin — petit blooms" }] }),
@@ -105,6 +115,7 @@ function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [panel, setPanel] = useState<"orders" | "menu">("orders");
   const nav = useNavigate();
 
   const counts = useMemo(
@@ -220,118 +231,155 @@ function AdminPage() {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-3 sm:grid-cols-3">
-          {cycleStatuses.map((status) => (
-            <div key={status} className="rounded-xl border hairline bg-shell p-5">
-              <p className="text-[10px] uppercase tracking-[0.28em] text-clay">
-                {statusLabel[status]}
-              </p>
-              <p className="mt-2 font-display text-3xl text-loam tabular-nums">{counts[status]}</p>
-            </div>
-          ))}
+        <div className="mt-8 inline-flex rounded-xl border hairline bg-shell p-1 shadow-[var(--shadow-soft)]">
+          {[
+            { id: "orders" as const, label: "Order Tracker", Icon: ClipboardList },
+            { id: "menu" as const, label: "Menu Management", Icon: Flower2 },
+          ].map(({ id, label, Icon }) => {
+            const active = panel === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setPanel(id)}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs uppercase tracking-[0.2em] transition-colors",
+                  active ? "bg-loam text-cream" : "text-ink/65 hover:text-loam",
+                )}
+              >
+                <Icon className="size-4" />
+                {label}
+              </button>
+            );
+          })}
         </div>
 
-        <section className="mt-8 overflow-hidden rounded-2xl border hairline bg-shell shadow-[var(--shadow-soft)]">
-          <div className="flex items-center justify-between gap-4 border-b hairline px-5 py-4 md:px-6">
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.28em] text-clay">All orders</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {orders.length} {orders.length === 1 ? "order" : "orders"} in Supabase
-              </p>
-            </div>
-            <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
-              <CalendarDays className="size-4 text-clay" />
-              Singapore schedule
-            </div>
+        {panel === "menu" ? (
+          <div className="mt-8">
+            <MenuManagement />
           </div>
+        ) : (
+          <>
+            <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              {cycleStatuses.map((status) => (
+                <div key={status} className="rounded-xl border hairline bg-shell p-5">
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-clay">
+                    {statusLabel[status]}
+                  </p>
+                  <p className="mt-2 font-display text-3xl text-loam tabular-nums">
+                    {counts[status]}
+                  </p>
+                </div>
+              ))}
+            </div>
 
-          {ordersLoading ? (
-            <div className="flex min-h-64 items-center justify-center gap-3 text-sm text-muted-foreground">
-              <Loader2 className="size-4 animate-spin text-clay" />
-              Loading orders…
-            </div>
-          ) : orders.length === 0 ? (
-            <div className="min-h-64 px-6 py-16 text-center">
-              <p className="font-serif-italic text-xl text-loam">No orders yet.</p>
-              <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-                New checkout submissions will appear here after Supabase accepts the order.
-              </p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-cream/60 hover:bg-cream/60">
-                  <TableHead className="px-5 py-4 text-[10px] uppercase tracking-[0.24em] text-clay">
-                    Customer
-                  </TableHead>
-                  <TableHead className="px-5 py-4 text-[10px] uppercase tracking-[0.24em] text-clay">
-                    Product ordered
-                  </TableHead>
-                  <TableHead className="px-5 py-4 text-[10px] uppercase tracking-[0.24em] text-clay">
-                    Size
-                  </TableHead>
-                  <TableHead className="px-5 py-4 text-[10px] uppercase tracking-[0.24em] text-clay">
-                    Colour
-                  </TableHead>
-                  <TableHead className="px-5 py-4 text-[10px] uppercase tracking-[0.24em] text-clay">
-                    Delivery / pick-up
-                  </TableHead>
-                  <TableHead className="px-5 py-4 text-[10px] uppercase tracking-[0.24em] text-clay">
-                    Scheduled date
-                  </TableHead>
-                  <TableHead className="px-5 py-4 text-[10px] uppercase tracking-[0.24em] text-clay">
-                    Status
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {orders.map((order) => (
-                  <TableRow key={order.id} className="hover:bg-cream/45">
-                    <TableCell className="min-w-44 px-5 py-5 align-top">
-                      <p className="font-display text-base text-loam">{order.contact_name}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">{order.contact_email}</p>
-                    </TableCell>
-                    <TableCell className="min-w-56 px-5 py-5 align-top text-sm leading-6 text-ink/85">
-                      {productText(order)}
-                    </TableCell>
-                    <TableCell className="min-w-32 px-5 py-5 align-top text-sm text-ink/80">
-                      {detailText(order, ["size", "stalk"])}
-                    </TableCell>
-                    <TableCell className="min-w-48 px-5 py-5 align-top text-sm leading-6 text-ink/80">
-                      {detailText(order, ["colour", "color", "scheme"])}
-                    </TableCell>
-                    <TableCell className="min-w-40 px-5 py-5 align-top">
-                      <span className="inline-flex rounded-full border border-sage/40 bg-sage/20 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-loam">
-                        {order.fulfillment === "delivery" ? "Delivery" : "Pick-up"}
-                      </span>
-                    </TableCell>
-                    <TableCell className="min-w-44 px-5 py-5 align-top text-sm text-ink/80">
-                      {formatDate(order.scheduled_date, order.scheduled_time)}
-                    </TableCell>
-                    <TableCell className="min-w-44 px-5 py-5 align-top">
-                      <button
-                        type="button"
-                        onClick={() => void cycleStatus(order)}
-                        disabled={updatingId === order.id}
-                        className={cn(
-                          "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] transition-all disabled:cursor-not-allowed disabled:opacity-60",
-                          statusTone[order.status],
-                        )}
-                      >
-                        {updatingId === order.id ? (
-                          <Loader2 className="size-3 animate-spin" />
-                        ) : (
-                          <ChevronRight className="size-3" />
-                        )}
-                        {statusLabel[order.status]}
-                      </button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </section>
+            <section className="mt-8 overflow-hidden rounded-2xl border hairline bg-shell shadow-[var(--shadow-soft)]">
+              <div className="flex items-center justify-between gap-4 border-b hairline px-5 py-4 md:px-6">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-clay">All orders</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {orders.length} {orders.length === 1 ? "order" : "orders"} in Supabase
+                  </p>
+                </div>
+                <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
+                  <CalendarDays className="size-4 text-clay" />
+                  Singapore schedule
+                </div>
+              </div>
+
+              {ordersLoading ? (
+                <div className="flex min-h-64 items-center justify-center gap-3 text-sm text-muted-foreground">
+                  <Loader2 className="size-4 animate-spin text-clay" />
+                  Loading orders…
+                </div>
+              ) : orders.length === 0 ? (
+                <div className="min-h-64 px-6 py-16 text-center">
+                  <p className="font-serif-italic text-xl text-loam">No orders yet.</p>
+                  <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+                    New checkout submissions will appear here after Supabase accepts the order.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-cream/60 hover:bg-cream/60">
+                        <TableHead className="px-5 py-4 text-[10px] uppercase tracking-[0.24em] text-clay">
+                          Customer
+                        </TableHead>
+                        <TableHead className="px-5 py-4 text-[10px] uppercase tracking-[0.24em] text-clay">
+                          Product ordered
+                        </TableHead>
+                        <TableHead className="px-5 py-4 text-[10px] uppercase tracking-[0.24em] text-clay">
+                          Size
+                        </TableHead>
+                        <TableHead className="px-5 py-4 text-[10px] uppercase tracking-[0.24em] text-clay">
+                          Colour
+                        </TableHead>
+                        <TableHead className="px-5 py-4 text-[10px] uppercase tracking-[0.24em] text-clay">
+                          Delivery / pick-up
+                        </TableHead>
+                        <TableHead className="px-5 py-4 text-[10px] uppercase tracking-[0.24em] text-clay">
+                          Scheduled date
+                        </TableHead>
+                        <TableHead className="px-5 py-4 text-[10px] uppercase tracking-[0.24em] text-clay">
+                          Status
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {orders.map((order) => (
+                        <TableRow key={order.id} className="hover:bg-cream/45">
+                          <TableCell className="min-w-44 px-5 py-5 align-top">
+                            <p className="font-display text-base text-loam">{order.contact_name}</p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {order.contact_email}
+                            </p>
+                          </TableCell>
+                          <TableCell className="min-w-56 px-5 py-5 align-top text-sm leading-6 text-ink/85">
+                            {productText(order)}
+                          </TableCell>
+                          <TableCell className="min-w-32 px-5 py-5 align-top text-sm text-ink/80">
+                            {detailText(order, ["size", "stalk"])}
+                          </TableCell>
+                          <TableCell className="min-w-48 px-5 py-5 align-top text-sm leading-6 text-ink/80">
+                            {detailText(order, ["colour", "color", "scheme"])}
+                          </TableCell>
+                          <TableCell className="min-w-40 px-5 py-5 align-top">
+                            <span className="inline-flex rounded-full border border-sage/40 bg-sage/20 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-loam">
+                              {order.fulfillment === "delivery" ? "Delivery" : "Pick-up"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="min-w-44 px-5 py-5 align-top text-sm text-ink/80">
+                            {formatDate(order.scheduled_date, order.scheduled_time)}
+                          </TableCell>
+                          <TableCell className="min-w-44 px-5 py-5 align-top">
+                            <button
+                              type="button"
+                              onClick={() => void cycleStatus(order)}
+                              disabled={updatingId === order.id}
+                              className={cn(
+                                "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] transition-all disabled:cursor-not-allowed disabled:opacity-60",
+                                statusTone[order.status],
+                              )}
+                            >
+                              {updatingId === order.id ? (
+                                <Loader2 className="size-3 animate-spin" />
+                              ) : (
+                                <ChevronRight className="size-3" />
+                              )}
+                              {statusLabel[order.status]}
+                            </button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </section>
+          </>
+        )}
       </div>
     </div>
   );

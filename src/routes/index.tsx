@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import heroBouquet from "@/assets/hero-bouquet.jpg";
 import servicesWedding from "@/assets/services-wedding.jpg";
-import { products } from "@/lib/products";
+import { useMenuProducts } from "@/hooks/use-menu-products";
 import { ArrowUpRight } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -34,9 +34,8 @@ const portfolio = [
 ];
 
 function HomePage() {
-  const featured = portfolio
-    .map((s) => products.find((p) => p.slug === s)!)
-    .filter(Boolean);
+  const { products } = useMenuProducts();
+  const featured = portfolio.map((s) => products.find((p) => p.slug === s)!).filter(Boolean);
 
   return (
     <div className="bg-cream">
@@ -53,15 +52,21 @@ function HomePage() {
               of love.
             </h1>
             <p className="mt-7 max-w-md text-ink/75">
-              Every bouquet is co-created — your story, your palette, shaped
-              by a WSQ-trained florist's hand. No two are alike.
+              Every bouquet is co-created — your story, your palette, shaped by a WSQ-trained
+              florist's hand. No two are alike.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-5">
               <Link
                 to="/shop"
                 className="inline-flex items-center gap-2 rounded-md bg-loam px-6 py-3.5 text-xs uppercase tracking-[0.22em] text-cream transition-all hover:-translate-y-0.5 hover:bg-ink"
               >
-                Shop bouquets <ArrowUpRight className="size-4" />
+                Ready bouquets <ArrowUpRight className="size-4" />
+              </Link>
+              <Link
+                to="/bespoke"
+                className="inline-flex items-center gap-2 rounded-md border hairline bg-shell px-6 py-3.5 text-xs uppercase tracking-[0.22em] text-loam transition-all hover:-translate-y-0.5 hover:border-clay/50 hover:bg-cream"
+              >
+                Custom bouquet
               </Link>
               <Link
                 to="/about"
@@ -80,14 +85,13 @@ function HomePage() {
               width={1600}
               height={1200}
             />
-            <p className="absolute bottom-5 left-5 hidden rounded-full bg-cream/85 px-4 py-1.5 text-[10px] uppercase tracking-[0.28em] text-loam backdrop-blur md:block">
-              No. 01 — Petals & Promises
-            </p>
           </div>
         </div>
       </section>
 
-      <div className="container-page"><div className="divider-rule" /></div>
+      <div className="container-page">
+        <div className="divider-rule" />
+      </div>
 
       {/* INTRO */}
       <section className="container-page grid gap-10 py-24 md:grid-cols-12 md:py-28">
@@ -100,14 +104,13 @@ function HomePage() {
         </div>
         <div className="space-y-5 text-base leading-relaxed text-ink/80 md:col-span-6 md:col-start-7">
           <p>
-            We do not sell off-the-shelf bouquets. Every order is a
-            conversation — your colours, your favourite blooms, the moment
-            you are marking — translated by a trained florist into something
-            that feels personal.
+            We do not sell off-the-shelf bouquets. Every order is a conversation — your colours,
+            your favourite blooms, the moment you are marking — translated by a trained florist into
+            something that feels personal.
           </p>
           <p>
-            From a single quiet rose to bridal florals for the day itself,
-            each piece is built fresh, by hand, and with intention.
+            From a single quiet rose to bridal florals for the day itself, each piece is built
+            fresh, by hand, and with intention.
           </p>
         </div>
       </section>
@@ -115,11 +118,34 @@ function HomePage() {
       {/* COLLECTIONS — editorial trio */}
       <section className="container-page">
         <div className="grid gap-4 pb-24 md:grid-cols-3 md:gap-6">
-          {([
-            { to: "/shop", search: { category: "fresh" as const, occasion: "all" as const }, label: "Fresh", num: "01", img: featured[0]?.image, sub: "Made to order, by hand." },
-            { to: "/shop", search: { category: "preserved" as const, occasion: "all" as const }, label: "Preserved", num: "02", img: products.find((p) => p.slug === "eternal-love")?.image, sub: "A keepsake that lasts." },
-            { to: "/services", search: undefined, label: "Weddings & Events", num: "03", img: servicesWedding, sub: "Florals for the day itself." },
-          ] as const).map((c) => (
+          {(
+            [
+              {
+                to: "/shop",
+                search: { category: "fresh" as const, occasion: "all" as const },
+                label: "Fresh",
+                num: "01",
+                img: featured[0]?.image,
+                sub: "Made to order, by hand.",
+              },
+              {
+                to: "/shop",
+                search: { category: "preserved" as const, occasion: "all" as const },
+                label: "Preserved",
+                num: "02",
+                img: products.find((p) => p.slug === "eternal-love")?.image,
+                sub: "A keepsake that lasts.",
+              },
+              {
+                to: "/services",
+                search: undefined,
+                label: "Weddings & Events",
+                num: "03",
+                img: servicesWedding,
+                sub: "Florals for the day itself.",
+              },
+            ] as const
+          ).map((c) => (
             <Link
               key={c.label}
               to={c.to}
@@ -134,9 +160,7 @@ function HomePage() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-loam/85 via-loam/15 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-7">
-                <p className="font-display text-xs tracking-[0.34em] text-cream/70">
-                  N° {c.num}
-                </p>
+                <p className="font-display text-xs tracking-[0.34em] text-cream/70">N° {c.num}</p>
                 <h3 className="mt-1 font-display text-3xl text-cream">
                   {c.label}
                   {c.to === "/services" ? (
@@ -214,10 +238,9 @@ function HomePage() {
             <span className="block font-serif-italic text-clay">— wedding package.</span>
           </h2>
           <p className="mt-6 text-ink/80">
-            Looking for your big day's florals? Our Intimate Love wedding
-            package is available from SGD 300, including the bride's bouquet,
-            groom's boutonnière and parents' boutonnières. Other additions
-            and urgent requests are also available.
+            Looking for your big day's florals? Our Intimate Love wedding package is available from
+            SGD 300, including the bride's bouquet, groom's boutonnière and parents' boutonnières.
+            Other additions and urgent requests are also available.
           </p>
           <div className="mt-9">
             <Link
@@ -234,9 +257,21 @@ function HomePage() {
       <section className="border-t hairline">
         <div className="container-page grid gap-12 py-20 md:grid-cols-3 md:py-24">
           {[
-            { n: "I", h: "Made to order", p: "Each bouquet is built fresh, the day before or the day of." },
-            { n: "II", h: "WSQ-trained", p: "Continually honing the craft so every arrangement feels considered." },
-            { n: "III", h: "Giving back", p: "Excess stock goes to hospices and donation drives, not the bin." },
+            {
+              n: "I",
+              h: "Made to order",
+              p: "Each bouquet is built fresh, the day before or the day of.",
+            },
+            {
+              n: "II",
+              h: "WSQ-trained",
+              p: "Continually honing the craft so every arrangement feels considered.",
+            },
+            {
+              n: "III",
+              h: "Giving back",
+              p: "Excess stock goes to hospices and donation drives, not the bin.",
+            },
           ].map((v) => (
             <div key={v.h}>
               <p className="font-display text-3xl text-clay">{v.n}.</p>

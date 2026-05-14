@@ -1,34 +1,67 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useCart, formatSGD } from "@/lib/cart";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Minus, Plus, Trash2, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { calculateDeliveryQuote } from "@/lib/checkout-server";
+import { toast } from "sonner";
 
 export function CartDrawer() {
-  const { open, setOpen, lines, remove, setQty, subtotal, clear } = useCart();
+  const {
+    open,
+    setOpen,
+    lines,
+    remove,
+    setQty,
+    subtotal,
+    deliveryQuote,
+    deliveryFee,
+    grandTotal,
+    setDeliveryQuote,
+    clear,
+  } = useCart();
   const { session } = useAuth();
   const nav = useNavigate();
+  const [postal, setPostal] = useState(deliveryQuote?.postal ?? "");
+  const [checkingFee, setCheckingFee] = useState(false);
+
   const goCheckout = () => {
     setOpen(false);
     nav({ to: session ? "/checkout" : "/login" });
+  };
+
+  const checkDeliveryFee = async () => {
+    if (postal.length !== 6) {
+      toast.error("Enter a 6-digit Singapore postal code.");
+      return;
+    }
+
+    setCheckingFee(true);
+    try {
+      const quote = await calculateDeliveryQuote({ data: { postal } });
+      setDeliveryQuote(quote);
+      toast.success(`Delivery fee checked: ${formatSGD(quote.fee)}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not check delivery fee.");
+    } finally {
+      setCheckingFee(false);
+    }
   };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent className="flex w-full flex-col bg-cream sm:max-w-md">
         <SheetHeader>
-          <SheetTitle className="font-display text-2xl text-forest-deep">
-            Your bag
-          </SheetTitle>
+          <SheetTitle className="font-display text-2xl text-forest-deep">Your bag</SheetTitle>
         </SheetHeader>
 
         {lines.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
             <p className="font-display text-xl text-forest-deep">Your bag is empty</p>
-            <p className="text-sm text-muted-foreground">
-              Browse the shop to add a bouquet.
-            </p>
+            <p className="text-sm text-muted-foreground">Browse the shop to add a bouquet.</p>
           </div>
         ) : (
           <>
@@ -95,10 +128,66 @@ export function CartDrawer() {
                   {formatSGD(subtotal)}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Delivery from SGD 20 · complimentary for orders above SGD 180.
-              </p>
-              <Button className="w-full bg-loam text-cream hover:bg-ink" size="lg" onClick={goCheckout}>
+
+              <div className="rounded-xl border hairline bg-shell p-4">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex size-8 items-center justify-center rounded-full bg-clay/10 text-clay">
+                    <Truck className="size-4" />
+                  </span>
+                  <div>
+                    <p className="font-display text-base text-loam">Delivery fee</p>
+                    <p className="text-xs leading-5 text-muted-foreground">
+                      Delivery fees are calculated from our Bishan dispatch point to the delivery
+                      postal code by driving distance.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4 flex gap-2">
+                  <Input
+                    value={postal}
+                    onChange={(e) => setPostal(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    placeholder="Singapore postal code"
+                    inputMode="numeric"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={checkingFee || postal.length !== 6}
+                    onClick={checkDeliveryFee}
+                    className="shrink-0 text-xs uppercase tracking-[0.18em]"
+                  >
+                    {checkingFee ? "Checking..." : "Check delivery fee"}
+                  </Button>
+                </div>
+                {deliveryQuote && (
+                  <p className="mt-3 text-xs leading-5 text-ink/70">{deliveryQuote.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Delivery</span>
+                  <span className="tabular-nums text-forest-deep">
+                    {subtotal >= 180
+                      ? "Free"
+                      : deliveryQuote
+                        ? formatSGD(deliveryFee)
+                        : "Check delivery"}
+                  </span>
+                </div>
+                <div className="flex items-baseline justify-between border-t hairline pt-3">
+                  <span className="text-xs uppercase tracking-[0.24em] text-clay">Total</span>
+                  <span className="font-display text-xl tabular-nums text-forest-deep">
+                    {formatSGD(grandTotal)}
+                  </span>
+                </div>
+              </div>
+
+              <Button
+                className="w-full bg-loam text-cream hover:bg-ink"
+                size="lg"
+                onClick={goCheckout}
+              >
                 Proceed to checkout
               </Button>
               <button

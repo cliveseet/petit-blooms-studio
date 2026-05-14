@@ -1,14 +1,15 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
   computePrice,
   productBySlug,
-  products,
   type Product,
   type OptionGroup,
   type OptionChoice,
   categoryLabels,
 } from "@/lib/products";
+import { useMenuProducts } from "@/hooks/use-menu-products";
+import { choiceSwatch, isColourGroup, isSizeOrCountGroup } from "@/lib/menu";
 import { useCart, formatSGD } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -19,9 +20,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/shop/$slug")({
   loader: ({ params }) => {
-    const product = productBySlug(params.slug);
-    if (!product) throw notFound();
-    return { product };
+    return { slug: params.slug, product: productBySlug(params.slug) };
   },
   head: ({ loaderData }) => {
     const p = loaderData?.product;
@@ -54,51 +53,30 @@ export const Route = createFileRoute("/shop/$slug")({
 });
 
 function PdpPage() {
-  const { product } = Route.useLoaderData();
+  const { slug, product: staticProduct } = Route.useLoaderData();
+  const { products, loading } = useMenuProducts();
+  const product = products.find((candidate) => candidate.slug === slug) ?? staticProduct;
+
+  if (!product && loading) {
+    return (
+      <div className="container-page py-24 text-center text-sm text-muted-foreground">
+        Loading bouquet…
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="container-page py-24 text-center">
+        <h1 className="font-display text-3xl text-loam">Bouquet not found</h1>
+        <Link to="/shop" className="mt-4 inline-block text-sm underline">
+          Back to shop
+        </Link>
+      </div>
+    );
+  }
+
   return <Pdp product={product} />;
-}
-
-// Map common colour values to actual swatch representations.
-// Multi-tone schemes use multi-stop gradients for accuracy.
-const colourSwatch: Record<string, string> = {
-  pink: "#f5c6cf",
-  red: "#a8323a",
-  white: "#f4ede1",
-  cappuccino: "#bfa085",
-  "dark-blue": "#28406b",
-  "mixed-blues": "linear-gradient(135deg,#28406b 0%,#4866a0 50%,#9fb6dc 100%)",
-  "mixed-pinks": "linear-gradient(135deg,#a8323a 0%,#e6a4b1 50%,#f5d3da 100%)",
-  pastels: "linear-gradient(135deg,#f5d3da 0%,#f5e6c8 33%,#cdd9ec 66%,#e7dcd0 100%)",
-  // "Rich tones" — deep reds, plums, burgundies, violets
-  dark: "linear-gradient(135deg,#5a1a26 0%,#7a2a3e 33%,#5a2b6e 66%,#2a1a4f 100%)",
-  rich: "linear-gradient(135deg,#5a1a26 0%,#a8323a 33%,#6a2a5e 66%,#3a1a4f 100%)",
-  emerald: "#2f5a45",
-  purple: "#6a4f88",
-  green: "#6e8266",
-  khaki: "#a89a72",
-  blue: "#4f6f96",
-  // "Silver white" — pale silvers and ivories
-  "silver-white": "linear-gradient(135deg,#e0e0d8 0%,#f5ede0 50%,#cfcfc8 100%)",
-  black: "#1c1a17",
-  // Newspaper — kraft / sepia / cream tones
-  newspaper: "linear-gradient(135deg,#bfb8a6 0%,#e8e2d3 50%,#9a8c70 100%)",
-  brown: "#7a5640",
-  "white-grad": "#f4ede1",
-  "brown-grad": "linear-gradient(135deg,#f4ede1 0%,#bfa085 50%,#7a5640 100%)",
-  // Soft whispers — pastel pinks + blush + cream
-  soft: "linear-gradient(135deg,#f5d3da 0%,#f8e0d4 50%,#f4ede1 100%)",
-  whispers: "linear-gradient(135deg,#f5d3da 0%,#f8e0d4 50%,#f4ede1 100%)",
-  // Timeless classics — red + white + ivory
-  classics: "linear-gradient(135deg,#a8323a 0%,#d49b9f 50%,#f4ede1 100%)",
-  helios: "linear-gradient(135deg,#e6b94f 0%,#d49b9f 100%)",
-};
-
-function isColourGroup(g: OptionGroup) {
-  return /colour|color|scheme/i.test(g.label) || g.id === "colour" || g.id === "scheme";
-}
-
-function isSizeOrCountGroup(g: OptionGroup) {
-  return /size|stalk/i.test(g.label) || g.id === "size" || g.id === "stalks";
 }
 
 function Pdp({ product }: { product: Product }) {
@@ -115,13 +93,12 @@ function Pdp({ product }: { product: Product }) {
 
   const price = useMemo(() => computePrice(product, selections), [product, selections]);
 
+  const { products: menuProducts } = useMenuProducts();
   const addOnProducts = (product.addOns ?? [])
-    .map((s) => products.find((p) => p.slug === s))
+    .map((s) => menuProducts.find((p) => p.slug === s))
     .filter(Boolean) as Product[];
 
-  const allRequiredFilled = product.options.every(
-    (g) => !g.required || !!selections[g.id]
-  );
+  const allRequiredFilled = product.options.every((g) => !g.required || !!selections[g.id]);
 
   const handleAdd = () => {
     if (!allRequiredFilled) {
@@ -148,15 +125,16 @@ function Pdp({ product }: { product: Product }) {
     toast.success(`${product.name} added to your bag.`);
   };
 
-  const setOpt = (id: string, value: string) =>
-    setSelections((p) => ({ ...p, [id]: value }));
+  const setOpt = (id: string, value: string) => setSelections((p) => ({ ...p, [id]: value }));
 
   return (
     <div className="bg-cream">
       <div className="container-page py-10 md:py-14">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Link to="/shop" className="hover:text-loam">Shop</Link>
+          <Link to="/shop" className="hover:text-loam">
+            Shop
+          </Link>
           <ChevronRight className="size-3" />
           <span className="text-loam">{product.name}</span>
         </nav>
@@ -182,9 +160,7 @@ function Pdp({ product }: { product: Product }) {
               {product.name}
             </h1>
             <div className="mt-5 flex items-baseline gap-3">
-              <p className="font-display text-3xl text-loam tabular-nums">
-                {formatSGD(price)}
-              </p>
+              <p className="font-display text-3xl text-loam tabular-nums">{formatSGD(price)}</p>
               <span className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
                 {qty > 1 ? `× ${qty} = ${formatSGD(price * qty)}` : "incl. wrap"}
               </span>
@@ -195,9 +171,7 @@ function Pdp({ product }: { product: Product }) {
             <p className="font-serif-italic text-lg leading-relaxed text-ink/80">
               {product.shortDescription}
             </p>
-            <p className="mt-4 text-sm leading-relaxed text-ink/75">
-              {product.description}
-            </p>
+            <p className="mt-4 text-sm leading-relaxed text-ink/75">{product.description}</p>
 
             {/* Options */}
             {product.options.length > 0 && (
@@ -230,7 +204,8 @@ function Pdp({ product }: { product: Product }) {
                 placeholder="A note for your recipient — leave blank if not required."
               />
               <p className="mt-1.5 text-[11px] text-muted-foreground">
-                Denise will handwrite this on a small note card.
+                {product.defaultPersonalisationPrompt ||
+                  "Denise will handwrite this on a small note card."}
               </p>
             </div>
 
@@ -263,8 +238,8 @@ function Pdp({ product }: { product: Product }) {
             </div>
 
             <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
-              Made fresh, to order. Please order at least 2 days before
-              delivery or collection. For urgent requests, message
+              Made fresh, to order. Please order at least 2 days before delivery or collection. For
+              urgent requests, message
               <a
                 href="https://www.instagram.com/petit.blooms"
                 className="ml-1 underline underline-offset-2 hover:text-loam"
@@ -279,9 +254,7 @@ function Pdp({ product }: { product: Product }) {
             {/* Add-ons */}
             {addOnProducts.length > 0 && (
               <div className="mt-10 border-t hairline pt-8">
-                <p className="text-[11px] uppercase tracking-[0.28em] text-clay">
-                  Pair it with
-                </p>
+                <p className="text-[11px] uppercase tracking-[0.28em] text-clay">Pair it with</p>
                 <div className="mt-4 grid gap-3">
                   {addOnProducts.map((a) => (
                     <Link
@@ -371,8 +344,8 @@ function OptionGroupControl({
                 typeof c.setsPriceTo === "number"
                   ? formatSGD(c.setsPriceTo)
                   : typeof c.priceDelta === "number" && c.priceDelta !== 0
-                  ? `+${formatSGD(c.priceDelta)}`
-                  : undefined
+                    ? `+${formatSGD(c.priceDelta)}`
+                    : undefined
               }
             />
           ))}
@@ -416,7 +389,7 @@ function OptionGroupControl({
                 "inline-flex items-center gap-2 rounded-md border px-3.5 py-2 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30",
                 active
                   ? "border-loam bg-loam text-cream"
-                  : "border-ink/15 bg-shell text-ink/80 hover:border-clay/50 hover:text-loam"
+                  : "border-ink/15 bg-shell text-ink/80 hover:border-clay/50 hover:text-loam",
               )}
             >
               {c.label}
@@ -450,13 +423,13 @@ function BookingCard({
         "group relative flex flex-col items-start gap-2 rounded-xl border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30",
         active
           ? "border-loam bg-loam text-cream shadow-[var(--shadow-soft)]"
-          : "border-ink/15 bg-shell text-ink/80 hover:-translate-y-0.5 hover:border-clay/60 hover:text-loam"
+          : "border-ink/15 bg-shell text-ink/80 hover:-translate-y-0.5 hover:border-clay/60 hover:text-loam",
       )}
     >
       <span
         className={cn(
           "absolute right-3 top-3 inline-flex size-5 items-center justify-center rounded-full border",
-          active ? "border-cream/70 bg-cream/10" : "border-ink/20"
+          active ? "border-cream/70 bg-cream/10" : "border-ink/20",
         )}
       >
         {active && <Check className="size-3" />}
@@ -464,38 +437,27 @@ function BookingCard({
       <span
         className={cn(
           "text-[10px] uppercase tracking-[0.28em]",
-          active ? "text-cream/70" : "text-clay"
+          active ? "text-cream/70" : "text-clay",
         )}
       >
         {choice.value === "deposit" ? "Reserve" : "Pay in full"}
       </span>
       <span
-        className={cn(
-          "font-display text-lg leading-tight",
-          active ? "text-cream" : "text-loam"
-        )}
+        className={cn("font-display text-lg leading-tight", active ? "text-cream" : "text-loam")}
       >
         {choice.label.split(" (")[0]}
       </span>
       {typeof choice.setsPriceTo === "number" && (
         <span
-          className={cn(
-            "font-display text-xl tabular-nums",
-            active ? "text-cream" : "text-loam"
-          )}
+          className={cn("font-display text-xl tabular-nums", active ? "text-cream" : "text-loam")}
         >
           {formatSGD(choice.setsPriceTo)}
         </span>
       )}
       <span
-        className={cn(
-          "text-xs leading-snug",
-          active ? "text-cream/75" : "text-muted-foreground"
-        )}
+        className={cn("text-xs leading-snug", active ? "text-cream/75" : "text-muted-foreground")}
       >
-        {choice.label.includes("(")
-          ? choice.label.slice(choice.label.indexOf("(") + 1, -1)
-          : ""}
+        {choice.label.includes("(") ? choice.label.slice(choice.label.indexOf("(") + 1, -1) : ""}
       </span>
     </button>
   );
@@ -520,7 +482,7 @@ function SegmentChip({
         "flex flex-col items-center gap-0.5 rounded-md border px-3 py-2.5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30",
         active
           ? "border-loam bg-loam text-cream"
-          : "border-ink/15 bg-shell text-ink/80 hover:border-clay/50 hover:text-loam"
+          : "border-ink/15 bg-shell text-ink/80 hover:border-clay/50 hover:text-loam",
       )}
     >
       <span className="text-sm font-medium">{label}</span>
@@ -528,7 +490,7 @@ function SegmentChip({
         <span
           className={cn(
             "text-[11px] tabular-nums",
-            active ? "text-cream/75" : "text-muted-foreground"
+            active ? "text-cream/75" : "text-muted-foreground",
           )}
         >
           {hint}
@@ -547,7 +509,7 @@ function SwatchPill({
   active: boolean;
   onClick: () => void;
 }) {
-  const swatch = colourSwatch[choice.value];
+  const swatch = choiceSwatch(choice);
   const style = swatch
     ? swatch.startsWith("linear-gradient")
       ? { backgroundImage: swatch }
@@ -561,13 +523,13 @@ function SwatchPill({
         "inline-flex items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-3.5 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30",
         active
           ? "border-loam bg-loam text-cream"
-          : "border-ink/15 bg-shell text-ink/80 hover:border-clay/50 hover:text-loam"
+          : "border-ink/15 bg-shell text-ink/80 hover:border-clay/50 hover:text-loam",
       )}
     >
       <span
         className={cn(
           "inline-block size-6 rounded-full border",
-          active ? "border-cream/40" : "border-ink/15"
+          active ? "border-cream/40" : "border-ink/15",
         )}
         style={style}
       />

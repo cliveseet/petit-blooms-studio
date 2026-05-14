@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useCart, formatSGD } from "@/lib/cart";
 import { supabase } from "@/integrations/supabase/client";
+import { calculateDeliveryQuote, createHitPayPayment } from "@/lib/checkout-server";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,32 +20,27 @@ export const Route = createFileRoute("/_authenticated/checkout")({
   component: CheckoutPage,
 });
 
-const TIME_SLOTS = ["10:00 – 12:00", "12:00 – 14:00", "14:00 – 16:00", "16:00 – 18:00", "18:00 – 20:00"];
-const STORE_POSTAL = 570111;
-
-// Rough delivery fee — first 2 digits of SG postal code roughly map to district.
-function estimateDeliveryFee(postal: string): number {
-  const n = parseInt(postal.slice(0, 6), 10);
-  if (Number.isNaN(n) || postal.length !== 6) return 20;
-  const d1 = Math.floor(n / 10000);
-  const d2 = Math.floor(STORE_POSTAL / 10000);
-  const delta = Math.abs(d1 - d2);
-  const fee = 15 + delta * 1.2;
-  return Math.min(40, Math.max(15, Math.round(fee)));
-}
-
+const TIME_SLOTS = [
+  "10:00 – 12:00",
+  "12:00 – 14:00",
+  "14:00 – 16:00",
+  "16:00 – 18:00",
+  "18:00 – 20:00",
+];
 function CheckoutPage() {
   const { user } = useAuth();
-  const { lines, subtotal, clear } = useCart();
+  const { lines, subtotal, deliveryQuote, setDeliveryQuote, clear } = useCart();
   const nav = useNavigate();
 
   const [fulfillment, setFulfillment] = useState<"delivery" | "pickup">("delivery");
   const [date, setDate] = useState<Date | undefined>();
   const [slot, setSlot] = useState<string>("");
   const [address, setAddress] = useState("");
-  const [postal, setPostal] = useState("");
+  const [postal, setPostal] = useState(deliveryQuote?.postal ?? "");
   const [voucher, setVoucher] = useState("");
-  const [voucherApplied, setVoucherApplied] = useState<{ code: string; discount: number } | null>(null);
+  const [voucherApplied, setVoucherApplied] = useState<{ code: string; discount: number } | null>(
+    null,
+  );
   const [name, setName] = useState(user?.user_metadata?.full_name ?? "");
   const [phone, setPhone] = useState("");
   const [recipientName, setRecipientName] = useState("");
@@ -52,13 +48,14 @@ function CheckoutPage() {
   const [deliveryInstructions, setDeliveryInstructions] = useState("");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
+  const [checkingFee, setCheckingFee] = useState(false);
 
+  const activeDeliveryQuote = deliveryQuote?.postal === postal ? deliveryQuote : null;
   const deliveryFee = useMemo(() => {
     if (fulfillment === "pickup") return 0;
     if (subtotal >= 180) return 0;
-    if (postal.length === 6) return estimateDeliveryFee(postal);
-    return 20;
-  }, [fulfillment, postal, subtotal]);
+    return activeDeliveryQuote?.fee ?? 0;
+  }, [activeDeliveryQuote, fulfillment, subtotal]);
 
   const discount = voucherApplied?.discount ?? 0;
   const total = Math.max(0, subtotal + deliveryFee - discount);
@@ -86,33 +83,66 @@ function CheckoutPage() {
     !!phone &&
     !!recipientName &&
     !!recipientPhone &&
-    (fulfillment === "pickup" || (address.length > 5 && postal.length === 6));
+    (fulfillment === "pickup" ||
+      (address.length > 5 && postal.length === 6 && (subtotal >= 180 || !!activeDeliveryQuote)));
+
+  const checkDeliveryFee = async () => {
+    if (postal.length !== 6) {
+      toast.error("Enter a 6-digit Singapore postal code.");
+      return;
+    }
+    setCheckingFee(true);
+    try {
+      const quote = await calculateDeliveryQuote({ data: { postal } });
+      setDeliveryQuote(quote);
+      toast.success(`Delivery fee checked: ${formatSGD(quote.fee)}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not check delivery fee.");
+    } finally {
+      setCheckingFee(false);
+    }
+  };
 
   const placeOrder = async () => {
     if (!valid || !user) return;
     setBusy(true);
-    const { data: order, error } = await supabase.from("orders").insert({
-      user_id: user.id,
-      fulfillment,
-      scheduled_date: format(date!, "yyyy-MM-dd"),
-      scheduled_time: slot,
-      delivery_address: fulfillment === "delivery" ? address : null,
-      delivery_postal: fulfillment === "delivery" ? postal : null,
-      delivery_fee: deliveryFee,
-      voucher_code: voucherApplied?.code ?? null,
-      discount,
-      subtotal,
-      total,
-      contact_name: name,
-      contact_phone: phone,
-      contact_email: user.email!,
-      recipient_name: recipientName,
-      recipient_phone: recipientPhone,
-      delivery_instructions: deliveryInstructions.trim() || null,
-      notes: notes || null,
-    }).select("id").single();
+    const { data: order, error } = await supabase
+      .from("orders")
+      .insert({
+        user_id: user.id,
+        fulfillment,
+        scheduled_date: format(date!, "yyyy-MM-dd"),
+        scheduled_time: slot,
+        delivery_address: fulfillment === "delivery" ? address : null,
+        delivery_postal: fulfillment === "delivery" ? postal : null,
+        delivery_fee: deliveryFee,
+        delivery_distance_km:
+          fulfillment === "delivery" ? (activeDeliveryQuote?.distanceKm ?? null) : null,
+        delivery_quote_source:
+          fulfillment === "delivery" ? (activeDeliveryQuote?.source ?? null) : null,
+        delivery_quote_checked_at:
+          fulfillment === "delivery" ? (activeDeliveryQuote?.checkedAt ?? null) : null,
+        voucher_code: voucherApplied?.code ?? null,
+        discount,
+        subtotal,
+        total,
+        contact_name: name,
+        contact_phone: phone,
+        contact_email: user.email!,
+        recipient_name: recipientName,
+        recipient_phone: recipientPhone,
+        delivery_instructions: deliveryInstructions.trim() || null,
+        notes: notes || null,
+        payment_status: "unpaid",
+      })
+      .select("id")
+      .single();
 
-    if (error || !order) { toast.error(error?.message ?? "Could not create order"); setBusy(false); return; }
+    if (error || !order) {
+      toast.error(error?.message ?? "Could not create order");
+      setBusy(false);
+      return;
+    }
 
     const { error: itemErr } = await supabase.from("order_items").insert(
       lines.map((l) => ({
@@ -127,18 +157,50 @@ function CheckoutPage() {
         personal_message: l.personalMessage?.trim() || "NIL",
       })),
     );
-    if (itemErr) { toast.error(itemErr.message); setBusy(false); return; }
+    if (itemErr) {
+      toast.error(itemErr.message);
+      setBusy(false);
+      return;
+    }
 
-    clear();
-    toast.success("Order placed. Payment integration coming soon.");
-    nav({ to: "/account" });
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      toast.error("Your sign-in session expired. Please sign in again before payment.");
+      setBusy(false);
+      return;
+    }
+
+    try {
+      const payment = await createHitPayPayment({
+        data: { orderId: order.id, origin: window.location.origin },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      clear();
+      toast.success("Order saved. Opening HitPay checkout.");
+      window.location.assign(payment.paymentUrl);
+    } catch (paymentError) {
+      toast.error(
+        paymentError instanceof Error
+          ? paymentError.message
+          : "Order saved, but HitPay checkout could not start.",
+      );
+      setBusy(false);
+    }
   };
 
   if (lines.length === 0) {
     return (
       <div className="container-page py-24 text-center">
         <p className="font-serif-italic text-xl text-loam">Your bag is empty.</p>
-        <Link to="/shop" className="mt-4 inline-block text-xs uppercase tracking-[0.22em] text-clay underline">Browse the shop</Link>
+        <Link
+          to="/shop"
+          className="mt-4 inline-block text-xs uppercase tracking-[0.22em] text-clay underline"
+        >
+          Browse the shop
+        </Link>
       </div>
     );
   }
@@ -180,17 +242,40 @@ function CheckoutPage() {
                 <div className="space-y-3">
                   <div>
                     <Label className="text-xs uppercase tracking-[0.22em] text-clay">Address</Label>
-                    <Textarea value={address} onChange={(e) => setAddress(e.target.value)} className="mt-2" placeholder="Block, street, unit number" rows={2} />
+                    <Textarea
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      className="mt-2"
+                      placeholder="Block, street, unit number"
+                      rows={2}
+                    />
                   </div>
-                  <div className="flex items-end gap-3">
+                  <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
                     <div className="flex-1">
-                      <Label className="text-xs uppercase tracking-[0.22em] text-clay">Postal code</Label>
-                      <Input value={postal} onChange={(e) => setPostal(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="Singapore postal code" className="mt-2" />
+                      <Label className="text-xs uppercase tracking-[0.22em] text-clay">
+                        Postal code
+                      </Label>
+                      <Input
+                        value={postal}
+                        onChange={(e) => setPostal(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                        placeholder="Singapore postal code"
+                        className="mt-2"
+                      />
                     </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={checkDeliveryFee}
+                      disabled={checkingFee || postal.length !== 6}
+                      className="mb-0 text-xs uppercase tracking-[0.18em]"
+                    >
+                      {checkingFee ? "Checking..." : "Check delivery fee"}
+                    </Button>
                     {address && postal.length === 6 && (
                       <a
                         href={`https://www.google.com/maps/search/?api=1&query=Singapore+${postal}`}
-                        target="_blank" rel="noreferrer"
+                        target="_blank"
+                        rel="noreferrer"
                         className="inline-flex h-10 items-center gap-1 rounded-md border hairline bg-shell px-3 py-2 text-xs uppercase tracking-[0.22em] text-loam transition-colors hover:bg-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30"
                       >
                         Verify on Maps <ExternalLink className="size-3" />
@@ -198,21 +283,39 @@ function CheckoutPage() {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Delivery from S570111 — fee estimated by distance.
-                    {subtotal >= 180 && <span className="ml-1 text-clay">Complimentary on this order (over $180).</span>}
+                    Delivery fees are calculated from our Bishan dispatch point to the delivery
+                    postal code by driving distance.
+                    {subtotal >= 180 && (
+                      <span className="ml-1 text-clay">
+                        Complimentary on this order (over $180).
+                      </span>
+                    )}
                   </p>
+                  {activeDeliveryQuote && (
+                    <p className="text-xs leading-5 text-ink/70">{activeDeliveryQuote.message}</p>
+                  )}
                 </div>
               </Section>
             )}
 
             {/* Date + slot */}
-            <Section title={fulfillment === "delivery" ? "03" : "02"} heading={fulfillment === "delivery" ? "When should we deliver?" : "When will you collect?"}>
+            <Section
+              title={fulfillment === "delivery" ? "03" : "02"}
+              heading={
+                fulfillment === "delivery" ? "When should we deliver?" : "When will you collect?"
+              }
+            >
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <Label className="text-xs uppercase tracking-[0.22em] text-clay">Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <button className={cn("mt-2 flex h-10 w-full items-center justify-between rounded-md border hairline bg-shell px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30", !date && "text-muted-foreground")}>
+                      <button
+                        className={cn(
+                          "mt-2 flex h-10 w-full items-center justify-between rounded-md border hairline bg-shell px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30",
+                          !date && "text-muted-foreground",
+                        )}
+                      >
                         {date ? format(date, "EEEE, d MMMM") : "Pick a date"}
                         <CalendarIcon className="size-4 text-clay" />
                       </button>
@@ -242,8 +345,12 @@ function CheckoutPage() {
                         key={s}
                         type="button"
                         onClick={() => setSlot(s)}
-                        className={cn("rounded-md border px-2 py-2 text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30",
-                          slot === s ? "border-loam bg-loam text-cream" : "hairline bg-shell text-ink/80 hover:border-clay/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30")}
+                        className={cn(
+                          "rounded-md border px-2 py-2 text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30",
+                          slot === s
+                            ? "border-loam bg-loam text-cream"
+                            : "hairline bg-shell text-ink/80 hover:border-clay/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30",
+                        )}
                       >
                         {s}
                       </button>
@@ -262,11 +369,24 @@ function CheckoutPage() {
                 </div>
                 <div>
                   <Label className="text-xs uppercase tracking-[0.22em] text-clay">Phone</Label>
-                  <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+65 9123 4567" className="mt-2" />
+                  <Input
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+65 9123 4567"
+                    className="mt-2"
+                  />
                 </div>
                 <div className="sm:col-span-2">
-                  <Label className="text-xs uppercase tracking-[0.22em] text-clay">Notes (optional)</Label>
-                  <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="mt-2" rows={2} placeholder="Allergies, special requests, timing notes..." />
+                  <Label className="text-xs uppercase tracking-[0.22em] text-clay">
+                    Notes (optional)
+                  </Label>
+                  <Textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="mt-2"
+                    rows={2}
+                    placeholder="Allergies, special requests, timing notes..."
+                  />
                 </div>
               </div>
             </Section>
@@ -280,15 +400,30 @@ function CheckoutPage() {
                   </p>
                 </div>
                 <div>
-                  <Label className="text-xs uppercase tracking-[0.22em] text-clay">Recipient name</Label>
-                  <Input value={recipientName} onChange={(e) => setRecipientName(e.target.value)} className="mt-2" />
+                  <Label className="text-xs uppercase tracking-[0.22em] text-clay">
+                    Recipient name
+                  </Label>
+                  <Input
+                    value={recipientName}
+                    onChange={(e) => setRecipientName(e.target.value)}
+                    className="mt-2"
+                  />
                 </div>
                 <div>
-                  <Label className="text-xs uppercase tracking-[0.22em] text-clay">Recipient phone</Label>
-                  <Input value={recipientPhone} onChange={(e) => setRecipientPhone(e.target.value)} placeholder="+65 9123 4567" className="mt-2" />
+                  <Label className="text-xs uppercase tracking-[0.22em] text-clay">
+                    Recipient phone
+                  </Label>
+                  <Input
+                    value={recipientPhone}
+                    onChange={(e) => setRecipientPhone(e.target.value)}
+                    placeholder="+65 9123 4567"
+                    className="mt-2"
+                  />
                 </div>
                 <div className="sm:col-span-2">
-                  <Label className="text-xs uppercase tracking-[0.22em] text-clay">Delivery instructions (optional)</Label>
+                  <Label className="text-xs uppercase tracking-[0.22em] text-clay">
+                    Delivery instructions (optional)
+                  </Label>
                   <Textarea
                     value={deliveryInstructions}
                     onChange={(e) => setDeliveryInstructions(e.target.value)}
@@ -303,12 +438,20 @@ function CheckoutPage() {
             {/* Voucher */}
             <Section title={fulfillment === "delivery" ? "06" : "05"} heading="Voucher">
               <div className="flex items-center gap-2">
-                <Input value={voucher} onChange={(e) => setVoucher(e.target.value)} placeholder="Discount code" className="flex-1" />
-                <Button type="button" variant="outline" onClick={applyVoucher}>Apply</Button>
+                <Input
+                  value={voucher}
+                  onChange={(e) => setVoucher(e.target.value)}
+                  placeholder="Discount code"
+                  className="flex-1"
+                />
+                <Button type="button" variant="outline" onClick={applyVoucher}>
+                  Apply
+                </Button>
               </div>
               {voucherApplied && (
                 <p className="mt-2 inline-flex items-center gap-2 text-xs text-clay">
-                  <Check className="size-3" /> {voucherApplied.code} · −{formatSGD(voucherApplied.discount)}
+                  <Check className="size-3" /> {voucherApplied.code} · −
+                  {formatSGD(voucherApplied.discount)}
                 </p>
               )}
               <p className="mt-1.5 text-[11px] text-muted-foreground">Try BLOOM10 or PETIT5.</p>
@@ -322,25 +465,48 @@ function CheckoutPage() {
               <ul className="mt-5 space-y-4 border-b hairline pb-5">
                 {lines.map((l) => (
                   <li key={l.id} className="flex gap-3">
-                    <img src={l.image} alt={l.name} className="h-16 w-14 flex-none rounded-md object-cover" />
+                    <img
+                      src={l.image}
+                      alt={l.name}
+                      className="h-16 w-14 flex-none rounded-md object-cover"
+                    />
                     <div className="flex-1">
                       <p className="font-display text-sm text-loam">{l.name}</p>
                       {Object.values(l.selectionLabels).length > 0 && (
-                        <p className="text-[11px] text-muted-foreground">{Object.values(l.selectionLabels).join(" · ")}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {Object.values(l.selectionLabels).join(" · ")}
+                        </p>
                       )}
                       <p className="text-[11px] text-muted-foreground">
                         Personal message: {l.personalMessage || "NIL"}
                       </p>
                       <p className="text-[11px] text-ink/70">× {l.quantity}</p>
                     </div>
-                    <p className="text-xs tabular-nums text-ink/80">{formatSGD(l.unitPrice * l.quantity)}</p>
+                    <p className="text-xs tabular-nums text-ink/80">
+                      {formatSGD(l.unitPrice * l.quantity)}
+                    </p>
                   </li>
                 ))}
               </ul>
               <dl className="mt-5 space-y-2 text-sm">
                 <Row k="Subtotal" v={formatSGD(subtotal)} />
-                <Row k={fulfillment === "delivery" ? "Delivery" : "Self-collection"} v={deliveryFee === 0 ? "Free" : formatSGD(deliveryFee)} />
-                {discount > 0 && <Row k={`Voucher · ${voucherApplied!.code}`} v={`−${formatSGD(discount)}`} accent />}
+                <Row
+                  k={fulfillment === "delivery" ? "Delivery" : "Self-collection"}
+                  v={
+                    fulfillment === "pickup" || deliveryFee === 0
+                      ? "Free"
+                      : activeDeliveryQuote
+                        ? formatSGD(deliveryFee)
+                        : "Check delivery"
+                  }
+                />
+                {discount > 0 && (
+                  <Row
+                    k={`Voucher · ${voucherApplied!.code}`}
+                    v={`−${formatSGD(discount)}`}
+                    accent
+                  />
+                )}
               </dl>
               {(recipientName || recipientPhone) && (
                 <div className="mt-5 rounded-md border hairline bg-cream/55 p-3 text-xs text-ink/70">
@@ -352,7 +518,9 @@ function CheckoutPage() {
               <div className="my-5 divider-rule" />
               <div className="flex items-baseline justify-between">
                 <span className="text-xs uppercase tracking-[0.28em] text-clay">Total</span>
-                <span className="font-display text-2xl text-loam tabular-nums">{formatSGD(total)}</span>
+                <span className="font-display text-2xl text-loam tabular-nums">
+                  {formatSGD(total)}
+                </span>
               </div>
               <Button
                 className="mt-6 w-full bg-loam text-cream hover:bg-ink"
@@ -360,10 +528,10 @@ function CheckoutPage() {
                 disabled={!valid || busy}
                 onClick={placeOrder}
               >
-                {busy ? "Placing order…" : "Proceed to payment"}
+                {busy ? "Opening HitPay..." : "Proceed to payment"}
               </Button>
               <p className="mt-3 text-center text-[11px] text-muted-foreground">
-                Payment integration coming soon — your order will be saved.
+                Secure payment is handled by HitPay after your order is saved.
               </p>
             </div>
           </aside>
@@ -373,7 +541,15 @@ function CheckoutPage() {
   );
 }
 
-function Section({ title, heading, children }: { title: string; heading: string; children: React.ReactNode }) {
+function Section({
+  title,
+  heading,
+  children,
+}: {
+  title: string;
+  heading: string;
+  children: React.ReactNode;
+}) {
   return (
     <section>
       <div className="flex items-baseline gap-3">
@@ -385,17 +561,44 @@ function Section({ title, heading, children }: { title: string; heading: string;
   );
 }
 
-function FulfillCard({ active, onClick, icon, label, hint }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string; hint: string }) {
+function FulfillCard({
+  active,
+  onClick,
+  icon,
+  label,
+  hint,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  hint: string;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={cn("relative flex flex-col items-start gap-2 rounded-xl border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30",
-        active ? "border-loam bg-loam text-cream shadow-[var(--shadow-soft)]" : "border-ink/15 bg-shell text-ink/80 hover:border-clay/60")}
+      className={cn(
+        "relative flex flex-col items-start gap-2 rounded-xl border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30",
+        active
+          ? "border-loam bg-loam text-cream shadow-[var(--shadow-soft)]"
+          : "border-ink/15 bg-shell text-ink/80 hover:border-clay/60",
+      )}
     >
-      <span className={cn("inline-flex size-8 items-center justify-center rounded-full", active ? "bg-cream/15 text-cream" : "bg-clay/10 text-clay")}>{icon}</span>
-      <span className={cn("font-display text-base", active ? "text-cream" : "text-loam")}>{label}</span>
-      <span className={cn("text-[11px]", active ? "text-cream/75" : "text-muted-foreground")}>{hint}</span>
+      <span
+        className={cn(
+          "inline-flex size-8 items-center justify-center rounded-full",
+          active ? "bg-cream/15 text-cream" : "bg-clay/10 text-clay",
+        )}
+      >
+        {icon}
+      </span>
+      <span className={cn("font-display text-base", active ? "text-cream" : "text-loam")}>
+        {label}
+      </span>
+      <span className={cn("text-[11px]", active ? "text-cream/75" : "text-muted-foreground")}>
+        {hint}
+      </span>
       {active && <Check className="absolute right-3 top-3 size-4 text-cream" />}
     </button>
   );

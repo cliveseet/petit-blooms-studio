@@ -17,13 +17,17 @@ export type Occasion =
   | "anniversary"
   | "birthday"
   | "get-well"
-  | "wedding";
+  | "wedding"
+  | "romance"
+  | "sympathy"
+  | "everyday";
 
 export type OptionChoice = {
   value: string;
   label: string;
   priceDelta?: number; // additive on top of base
   setsPriceTo?: number; // overrides absolute price (per stalk-style menus)
+  swatch?: string; // solid colour or CSS gradient for colour/scheme choices
 };
 
 export type OptionGroup = {
@@ -34,6 +38,7 @@ export type OptionGroup = {
 };
 
 export type Product = {
+  id?: string;
   slug: string;
   name: string;
   category: Category;
@@ -45,6 +50,11 @@ export type Product = {
   description: string;
   options: OptionGroup[];
   addOns?: string[]; // slugs
+  defaultPersonalisationPrompt?: string;
+  sortOrder?: number;
+  archived?: boolean;
+  deletedAt?: string | null;
+  source?: "local" | "database";
 };
 
 export const products: Product[] = [
@@ -56,8 +66,7 @@ export const products: Product[] = [
     basePrice: 50,
     fromPrice: true,
     image: petalsPromises,
-    shortDescription:
-      "A soft, romantic bridal bouquet — blush, ivory and muted greens.",
+    shortDescription: "A soft, romantic bridal bouquet — blush, ivory and muted greens.",
     description:
       "Crafted for the most unforgettable walk down the aisle, this hand-tied bridal bouquet is a soft, elegant composition of fresh seasonal blooms. Featuring a romantic palette of blush, ivory and muted greens, it is designed to complement any gown with grace and timeless beauty. Each bouquet is made to order, ensuring your florals are as unique as your love story. Perfect for brides seeking a classic, refined look with a modern touch. Satin ribbon wrap included; customisation available upon request.",
     options: [
@@ -80,8 +89,7 @@ export const products: Product[] = [
     basePrice: 45,
     fromPrice: true,
     image: petitSignature,
-    shortDescription:
-      "Our signature bouquet, tailored to your colour scheme and story.",
+    shortDescription: "Our signature bouquet, tailored to your colour scheme and story.",
     description:
       "Bring your vision to life with ease. Share your preferred colour scheme, and let us craft a one-of-a-kind masterpiece tailored to your special someone. Trust us to create a breathtaking bouquet that speaks from the heart and leaves a lasting impression.",
     options: [
@@ -187,7 +195,7 @@ export const products: Product[] = [
     image: heliosBloom,
     shortDescription: "Sunflowers for happiness and warm wishes.",
     description:
-      "Sunflowers symbolise happiness and warm wishes, radiating cheer with their vibrant yellow petals. This bold, captivating bloom never fails to brighten hearts and lift spirits. Do note that filler flowers may change, depending on the design.",
+      "Sunflowers symbolise happiness and warm wishes, carrying cheer through their golden petals. This bold bloom brings warmth to any gesture. Do note that filler flowers may change, depending on the design.",
     options: [
       {
         id: "stalks",
@@ -216,7 +224,7 @@ export const products: Product[] = [
     image: petalSymphony,
     shortDescription: "Lush hydrangeas with our signature filler — abundance and emotion.",
     description:
-      "Gracefully nestled among our signature mixed filler flowers, hydrangeas symbolise abundance and heartfelt emotion. This stunning, oversized bloom adds a touch of elegance and prominence to any bouquet.",
+      "Set among our signature mixed filler flowers, hydrangeas symbolise abundance and heartfelt emotion. This generous bloom brings softness, volume and quiet elegance to any bouquet.",
     options: [
       {
         id: "stalks",
@@ -252,7 +260,7 @@ export const products: Product[] = [
     image: springsWhisper,
     shortDescription: "Tulips — perfect love, renewal and new beginnings.",
     description:
-      "Tulips, symbolising perfect love, are often linked to the arrival of spring, carrying a message of renewal and new beginnings. These beautiful, transformative blooms add elegance and vibrancy through our Spring's Whisper bouquet. Do note that filler flowers may change, depending on the design.",
+      "Tulips, symbolising perfect love, are often linked to the arrival of spring, carrying a message of renewal and new beginnings. These graceful blooms bring movement and colour to our Spring's Whisper bouquet. Do note that filler flowers may change, depending on the design.",
     options: [
       {
         id: "stalks",
@@ -293,7 +301,11 @@ export const products: Product[] = [
         required: true,
         choices: [
           { value: "classics", label: "Timeless classics (reds)", setsPriceTo: 70 },
-          { value: "pastels", label: "Soft pastels (pinks, blues, purples, whites)", setsPriceTo: 75 },
+          {
+            value: "pastels",
+            label: "Soft pastels (pinks, blues, purples, whites)",
+            setsPriceTo: 75,
+          },
           { value: "helios", label: "Helio's basket (sunflowers)", setsPriceTo: 70 },
         ],
       },
@@ -309,7 +321,7 @@ export const products: Product[] = [
     image: eternalLove,
     shortDescription: "A long-lasting preserved bouquet — a timeless keepsake.",
     description:
-      "A timeless way to capture nature's beauty, offering a long-lasting alternative to fresh flowers. Arranged with care, these bouquets retain their vibrant colours and delicate textures — a perfect keepsake or thoughtful gift for any occasion.",
+      "A timeless way to capture nature's beauty, offering a long-lasting alternative to fresh flowers. Arranged with care, these bouquets retain their rich colours and delicate textures — a perfect keepsake or thoughtful gift for any occasion.",
     options: [
       {
         id: "scheme",
@@ -392,8 +404,7 @@ export const products: Product[] = [
   },
 ];
 
-export const productBySlug = (slug: string) =>
-  products.find((p) => p.slug === slug);
+export const productBySlug = (slug: string) => products.find((p) => p.slug === slug);
 
 export const occasionLabels: Record<Occasion, string> = {
   celebration: "Celebration",
@@ -401,6 +412,9 @@ export const occasionLabels: Record<Occasion, string> = {
   birthday: "Birthday",
   "get-well": "Get well soon",
   wedding: "Wedding",
+  romance: "Romance",
+  sympathy: "Sympathy",
+  everyday: "Everyday",
 };
 
 export const categoryLabels: Record<Category, string> = {
@@ -409,10 +423,7 @@ export const categoryLabels: Record<Category, string> = {
   accessories: "Accessories",
 };
 
-export function computePrice(
-  product: Product,
-  selections: Record<string, string>
-): number {
+export function computePrice(product: Product, selections: Record<string, string>): number {
   let absolute: number | null = null;
   let delta = 0;
   for (const group of product.options) {
