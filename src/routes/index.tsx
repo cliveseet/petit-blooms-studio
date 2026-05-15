@@ -60,13 +60,13 @@ function HomePage() {
                 to="/shop"
                 className="inline-flex items-center gap-2 rounded-md bg-loam px-6 py-3.5 text-xs uppercase tracking-[0.22em] text-cream transition-all hover:-translate-y-0.5 hover:bg-ink"
               >
-                Ready bouquets <ArrowUpRight className="size-4" />
+                View the collection <ArrowUpRight className="size-4" />
               </Link>
               <Link
                 to="/bespoke"
                 className="inline-flex items-center gap-2 rounded-md border hairline bg-shell px-6 py-3.5 text-xs uppercase tracking-[0.22em] text-loam transition-all hover:-translate-y-0.5 hover:border-clay/50 hover:bg-cream"
               >
-                Custom bouquet
+                Build bespoke
               </Link>
               <Link
                 to="/about"

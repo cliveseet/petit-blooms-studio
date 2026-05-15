@@ -21,7 +21,8 @@ function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [inlineMessage, setInlineMessage] = useState<string | null>(null);
   const [resetMessage, setResetMessage] = useState<string | null>(null);
-  const { resetPasswordForEmail, signIn, signInWithGoogle, signUp, session, isAdmin, loading } = useAuth();
+  const { resetPasswordForEmail, signIn, signInWithGoogle, signUp, session, isAdmin, loading } =
+    useAuth();
   const nav = useNavigate();
 
   useEffect(() => {
@@ -242,7 +243,11 @@ function authErrorCopy(error: string) {
   if (message.includes("email not confirmed") || message.includes("confirm")) {
     return "Please confirm your email before signing in. If you have already done so, request a new reset or confirmation link.";
   }
-  if (message.includes("failed to fetch") || message.includes("network") || message.includes("fetch")) {
+  if (
+    message.includes("failed to fetch") ||
+    message.includes("network") ||
+    message.includes("fetch")
+  ) {
     return "We could not reach Supabase. Check your internet connection and try again.";
   }
   if (message.includes("provider") || message.includes("oauth")) {

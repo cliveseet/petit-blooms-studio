@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Check, Leaf } from "lucide-react";
+import { Check } from "lucide-react";
 import heroBouquet from "@/assets/hero-bouquet.jpg";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,13 +13,13 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/bespoke")({
   head: () => ({
     meta: [
-      { title: "Custom Bouquet — petit blooms" },
+      { title: "Bespoke — petit blooms" },
       {
         name: "description",
         content:
           "Build a custom Petit Blooms bouquet by choosing main flowers, fillers, size and palette.",
       },
-      { property: "og:title", content: "Custom Bouquet — petit blooms" },
+      { property: "og:title", content: "Bespoke — petit blooms" },
       {
         property: "og:description",
         content: "A high-touch bouquet flow for choosing your own flowers.",
@@ -36,6 +36,27 @@ type FloralChoice = {
   price: number;
   tone: string;
   accent?: string;
+  form:
+    | "rose"
+    | "tulip"
+    | "sunflower"
+    | "hydrangea"
+    | "peony"
+    | "ranunculus"
+    | "anemone"
+    | "lisianthus"
+    | "snapdragon"
+    | "calla"
+    | "carnation"
+    | "matthiola"
+    | "mixed-filler"
+    | "eucalyptus"
+    | "babys-breath"
+    | "dusty-miller"
+    | "fern"
+    | "wax-flower"
+    | "limonium"
+    | "ruscus";
   kind?: "bloom" | "filler";
 };
 
@@ -53,86 +74,177 @@ type SizeChoice = {
   hint: string;
 };
 
-const bouquetBase = 55;
+const bouquetBase = 68;
 
 const mainFlowers: FloralChoice[] = [
-  { id: "rose", label: "Roses", price: 25, tone: "#c96f7d", accent: "#f4d4da" },
-  { id: "tulip", label: "Tulips", price: 24, tone: "#d997a2", accent: "#f8dfd7" },
-  { id: "sunflower", label: "Sunflowers", price: 22, tone: "#d9a93d", accent: "#5f3f24" },
-  { id: "hydrangea", label: "Hydrangea", price: 36, tone: "#8aa6cf", accent: "#d6e2ef" },
-  { id: "peony", label: "Peonies", price: 42, tone: "#e6a4b1", accent: "#f7d8df" },
-  { id: "ranunculus", label: "Ranunculus", price: 32, tone: "#f0b7a4", accent: "#f8e0d4" },
-  { id: "anemone", label: "Anemones", price: 34, tone: "#3d3158", accent: "#f4ede1" },
-  { id: "lisianthus", label: "Lisianthus", price: 28, tone: "#d8c3e8", accent: "#f1e8f6" },
-  { id: "snapdragon", label: "Snapdragons", price: 28, tone: "#f3c7d1", accent: "#f8e6ea" },
-  { id: "calla", label: "Calla lilies", price: 34, tone: "#f4ede1", accent: "#c7a76c" },
-  { id: "carnation", label: "Carnations", price: 20, tone: "#e0a6b0", accent: "#f1d0d6" },
-  { id: "matthiola", label: "Matthiola", price: 22, tone: "#c6b7d6", accent: "#eee7f2" },
+  { id: "rose", label: "Roses", price: 30, tone: "#c96f7d", accent: "#f4d4da", form: "rose" },
+  { id: "tulip", label: "Tulips", price: 29, tone: "#d997a2", accent: "#f8dfd7", form: "tulip" },
+  {
+    id: "sunflower",
+    label: "Sunflowers",
+    price: 27,
+    tone: "#d9a93d",
+    accent: "#5f3f24",
+    form: "sunflower",
+  },
+  {
+    id: "hydrangea",
+    label: "Hydrangea",
+    price: 43,
+    tone: "#8aa6cf",
+    accent: "#d6e2ef",
+    form: "hydrangea",
+  },
+  { id: "peony", label: "Peonies", price: 50, tone: "#e6a4b1", accent: "#f7d8df", form: "peony" },
+  {
+    id: "ranunculus",
+    label: "Ranunculus",
+    price: 38,
+    tone: "#f0b7a4",
+    accent: "#f8e0d4",
+    form: "ranunculus",
+  },
+  {
+    id: "anemone",
+    label: "Anemones",
+    price: 41,
+    tone: "#3d3158",
+    accent: "#f4ede1",
+    form: "anemone",
+  },
+  {
+    id: "lisianthus",
+    label: "Lisianthus",
+    price: 34,
+    tone: "#d8c3e8",
+    accent: "#f1e8f6",
+    form: "lisianthus",
+  },
+  {
+    id: "snapdragon",
+    label: "Snapdragons",
+    price: 34,
+    tone: "#f3c7d1",
+    accent: "#f8e6ea",
+    form: "snapdragon",
+  },
+  {
+    id: "calla",
+    label: "Calla lilies",
+    price: 41,
+    tone: "#f4ede1",
+    accent: "#c7a76c",
+    form: "calla",
+  },
+  {
+    id: "carnation",
+    label: "Carnations",
+    price: 24,
+    tone: "#e0a6b0",
+    accent: "#f1d0d6",
+    form: "carnation",
+  },
+  {
+    id: "matthiola",
+    label: "Matthiola",
+    price: 27,
+    tone: "#c6b7d6",
+    accent: "#eee7f2",
+    form: "matthiola",
+  },
 ];
 
 const fillerFlowers: FloralChoice[] = [
   {
     id: "mixed-fillers",
     label: "Mixed Fillers",
-    price: 6,
+    price: 10,
     tone: "#d9e4d0",
     accent: "#f4ede1",
+    form: "mixed-filler",
     kind: "filler",
   },
   {
     id: "eucalyptus",
     label: "Eucalyptus",
-    price: 10,
+    price: 14,
     tone: "#8fa085",
     accent: "#dfe7da",
+    form: "eucalyptus",
     kind: "filler",
   },
   {
     id: "babys-breath",
     label: "Baby's breath",
-    price: 8,
+    price: 12,
     tone: "#f4ede1",
     accent: "#d5cbb8",
+    form: "babys-breath",
     kind: "filler",
   },
   {
     id: "dusty-miller",
     label: "Dusty miller",
-    price: 10,
+    price: 14,
     tone: "#b9c4b3",
     accent: "#edf0ea",
+    form: "dusty-miller",
     kind: "filler",
   },
-  { id: "fern", label: "Fern", price: 8, tone: "#6e8266", accent: "#b7c3ad", kind: "filler" },
+  {
+    id: "fern",
+    label: "Fern",
+    price: 12,
+    tone: "#6e8266",
+    accent: "#b7c3ad",
+    form: "fern",
+    kind: "filler",
+  },
   {
     id: "wax-flower",
     label: "Wax flower",
-    price: 9,
+    price: 13,
     tone: "#ead0d8",
     accent: "#f7eef1",
+    form: "wax-flower",
     kind: "filler",
   },
   {
     id: "limonium",
     label: "Limonium",
-    price: 8,
+    price: 12,
     tone: "#b5a1cf",
     accent: "#eee7f4",
+    form: "limonium",
     kind: "filler",
   },
-  { id: "ruscus", label: "Ruscus", price: 9, tone: "#5f754f", accent: "#b8c6ae", kind: "filler" },
+  {
+    id: "ruscus",
+    label: "Ruscus",
+    price: 13,
+    tone: "#5f754f",
+    accent: "#b8c6ae",
+    form: "ruscus",
+    kind: "filler",
+  },
 ];
 
 const sizeOptions: SizeChoice[] = [
-  { id: "small", label: "Petite", short: "S", price: 0, hint: "A compact hand-tied gesture." },
-  { id: "medium", label: "Gathered", short: "M", price: 10, hint: "Balanced volume for gifting." },
-  { id: "large", label: "Grand", short: "L", price: 25, hint: "Fuller form and wider face." },
+  { id: "small", label: "Gesture", short: "S", price: 0, hint: "A compact hand-tied form." },
+  { id: "medium", label: "Signature", short: "M", price: 15, hint: "Balanced volume for gifting." },
+  {
+    id: "large",
+    label: "Abundant",
+    short: "L",
+    price: 32,
+    hint: "A wider face and fuller profile.",
+  },
   {
     id: "extra-large",
-    label: "Statement",
+    label: "Atelier",
     short: "XL",
-    price: 50,
-    hint: "Generous scale and presence.",
+    price: 60,
+    hint: "A generous studio-scale arrangement.",
   },
 ];
 
@@ -201,7 +313,18 @@ function BespokePage() {
   );
   const previewFlowers = useMemo(() => {
     const expandedFillers = fillers.includes("mixed-fillers") ? mixedPreview : fillerSelections;
-    return [...mainSelections, ...expandedFillers].slice(0, 6);
+    const fullerMain = mainSelections.flatMap((flower, index) =>
+      index === 0 ? [flower, flower] : [flower],
+    );
+    const fullerFillers = expandedFillers.flatMap((flower, index) =>
+      index === 0 ? [flower, flower] : [flower],
+    );
+    return [
+      ...fullerFillers.slice(0, 2),
+      ...fullerMain,
+      ...fullerFillers.slice(2),
+      ...fullerMain.slice(0, 1),
+    ].slice(0, 9);
   }, [fillerSelections, fillers, mainSelections]);
   const menuFlowers = useMemo(
     () =>
@@ -274,8 +397,8 @@ function BespokePage() {
 
   const addBespoke = () => {
     add({
-      slug: "custom-bouquet",
-      name: "Custom Bouquet",
+      slug: "bespoke-bouquet",
+      name: "Bespoke Bouquet",
       image: heroBouquet,
       unitPrice: total,
       quantity: 1,
@@ -293,14 +416,14 @@ function BespokePage() {
       },
       personalMessage: personalMessage.trim() || "NIL",
     });
-    toast.success("Custom Bouquet added to your bag.");
+    toast.success("Bespoke Bouquet added to your bag.");
   };
 
   return (
     <div className="bg-cream">
       <section className="container-page grid gap-12 py-16 lg:grid-cols-[minmax(0,0.95fr)_minmax(380px,0.75fr)] lg:gap-14 lg:py-24">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.34em] text-clay">Custom Bouquet</p>
+          <p className="text-[11px] uppercase tracking-[0.34em] text-clay">Bespoke</p>
           <h1 className="mt-5 max-w-3xl font-display text-5xl leading-[1.02] text-loam md:text-7xl">
             Compose a bouquet
             <span className="block font-serif-italic text-clay">around your flowers.</span>
@@ -334,7 +457,7 @@ function BespokePage() {
               </span>
             </div>
             <Button className="mt-6 w-full" size="lg" onClick={addBespoke}>
-              Add custom bouquet
+              Add bespoke bouquet
             </Button>
             <p className="mt-3 text-center text-[11px] leading-5 text-muted-foreground">
               Seasonal substitutions may be made while preserving your selected floral direction.
@@ -426,13 +549,7 @@ function ChoiceSection({
                     active ? "border-cream/40 bg-cream/10" : "hairline bg-cream",
                   )}
                 >
-                  {active ? (
-                    <Check className="size-4" />
-                  ) : choice.kind === "filler" ? (
-                    <Leaf className="size-4" style={{ color: choice.tone }} />
-                  ) : (
-                    <MiniBloom tone={choice.tone} accent={choice.accent} />
-                  )}
+                  {active ? <Check className="size-4" /> : <MiniFlower choice={choice} />}
                 </span>
                 <span
                   className={cn(
@@ -570,7 +687,7 @@ function BouquetPreview({
   size: SizeChoice;
   flight: { key: number; choice: FloralChoice; lane: number } | null;
 }) {
-  const sizeScale = { small: 0.9, medium: 1, large: 1.08, "extra-large": 1.16 }[size.id];
+  const sizeScale = { small: 0.96, medium: 1.05, large: 1.14, "extra-large": 1.22 }[size.id];
 
   return (
     <div className="bouquet-stage relative min-h-[560px] overflow-hidden rounded-[2rem] border hairline bg-shell shadow-[var(--shadow-lift)]">
@@ -587,7 +704,7 @@ function BouquetPreview({
       <div className="absolute inset-0 bg-cream/74" />
       <div className="absolute inset-x-0 bottom-0 flex h-[86%] items-end justify-center pb-12">
         <div
-          className="relative h-[390px] w-[330px]"
+          className="relative h-[410px] w-[350px]"
           style={{ transform: `scale(${sizeScale})`, transformOrigin: "50% 100%" }}
         >
           <div className="bouquet-paper bouquet-paper-left" />
@@ -606,15 +723,17 @@ function BouquetPreview({
 
 function FlowerStem({ flower, index }: { flower: FloralChoice; index: number }) {
   const slots = [
-    { left: 48, bottom: 76, rotate: -10, scale: 1.08 },
-    { left: 36, bottom: 66, rotate: -22, scale: 0.95 },
-    { left: 59, bottom: 68, rotate: 17, scale: 0.98 },
-    { left: 43, bottom: 54, rotate: -5, scale: 0.86 },
-    { left: 63, bottom: 54, rotate: 25, scale: 0.8 },
-    { left: 29, bottom: 50, rotate: -31, scale: 0.76 },
+    { left: 49, bottom: 72, rotate: -6, scale: 1.1 },
+    { left: 39, bottom: 62, rotate: -21, scale: 0.93 },
+    { left: 60, bottom: 64, rotate: 17, scale: 0.98 },
+    { left: 47, bottom: 50, rotate: -12, scale: 0.9 },
+    { left: 66, bottom: 50, rotate: 28, scale: 0.82 },
+    { left: 31, bottom: 48, rotate: -34, scale: 0.78 },
+    { left: 55, bottom: 42, rotate: 8, scale: 0.82 },
+    { left: 42, bottom: 38, rotate: -24, scale: 0.72 },
+    { left: 70, bottom: 38, rotate: 36, scale: 0.68 },
   ];
   const slot = slots[index % slots.length];
-  const isFiller = flower.kind === "filler";
 
   return (
     <div
@@ -629,11 +748,7 @@ function FlowerStem({ flower, index }: { flower: FloralChoice; index: number }) 
       <span className="flower-stalk" />
       <span className="flower-leaf flower-leaf-a" />
       <span className="flower-leaf flower-leaf-b" />
-      {isFiller ? (
-        <FillerHead tone={flower.tone} accent={flower.accent} />
-      ) : (
-        <Bloom tone={flower.tone} accent={flower.accent} />
-      )}
+      <FlowerHead flower={flower} />
     </div>
   );
 }
@@ -644,26 +759,147 @@ function FlyingFlower({ flower, lane }: { flower: FloralChoice; lane: number }) 
       <span className="flower-stalk" />
       <span className="flower-leaf flower-leaf-a" />
       <span className="flower-leaf flower-leaf-b" />
-      {flower.kind === "filler" ? (
-        <FillerHead tone={flower.tone} accent={flower.accent} />
-      ) : (
-        <Bloom tone={flower.tone} accent={flower.accent} />
-      )}
+      <FlowerHead flower={flower} />
     </div>
   );
 }
 
-function Bloom({ tone, accent }: { tone: string; accent?: string }) {
+function FlowerHead({ flower }: { flower: FloralChoice }) {
+  const style = {
+    ["--bloom" as string]: flower.tone,
+    ["--bloom-soft" as string]: flower.accent || flower.tone,
+  };
+
+  if (flower.form === "rose") {
+    return (
+      <span className="flower-head rose-head" style={style}>
+        {Array.from({ length: 16 }).map((_, index) => (
+          <span
+            key={`outer-${index}`}
+            className="rose-petal rose-petal-outer"
+            style={{
+              transform: `translate(-50%, -50%) rotate(${index * 22.5}deg) translateY(-24px)`,
+            }}
+          />
+        ))}
+        {Array.from({ length: 10 }).map((_, index) => (
+          <span
+            key={`inner-${index}`}
+            className="rose-petal rose-petal-inner"
+            style={{
+              transform: `translate(-50%, -50%) rotate(${index * 36 + 12}deg) translateY(-12px)`,
+            }}
+          />
+        ))}
+        <span className="rose-core" />
+      </span>
+    );
+  }
+
+  if (flower.form === "tulip" || flower.form === "calla") {
+    return (
+      <span
+        className={cn("flower-head", flower.form === "calla" ? "calla-head" : "tulip-head")}
+        style={style}
+      >
+        <span className="cup-petal cup-petal-a" />
+        <span className="cup-petal cup-petal-b" />
+        <span className="cup-petal cup-petal-c" />
+      </span>
+    );
+  }
+
+  if (flower.form === "sunflower") {
+    return (
+      <span className="flower-head sunflower-head" style={style}>
+        {Array.from({ length: 18 }).map((_, index) => (
+          <span
+            key={index}
+            className="sunflower-petal"
+            style={{
+              transform: `translate(-50%, -50%) rotate(${index * 20}deg) translateY(-27px)`,
+            }}
+          />
+        ))}
+        <span className="sunflower-heart" />
+      </span>
+    );
+  }
+
+  if (flower.form === "hydrangea") {
+    return (
+      <span className="flower-head hydrangea-head" style={style}>
+        {Array.from({ length: 9 }).map((_, index) => (
+          <span key={index} className={`hydrangea-cluster hydrangea-${index + 1}`}>
+            {Array.from({ length: 4 }).map((__, petal) => (
+              <span
+                key={petal}
+                className="hydrangea-petal"
+                style={{
+                  transform: `translate(-50%, -50%) rotate(${petal * 90}deg) translateY(-5px)`,
+                }}
+              />
+            ))}
+          </span>
+        ))}
+      </span>
+    );
+  }
+
+  if (flower.form === "snapdragon" || flower.form === "matthiola") {
+    return (
+      <span className="flower-head spike-head" style={style}>
+        {Array.from({ length: 9 }).map((_, index) => (
+          <span
+            key={index}
+            className={cn("spike-bloom", index % 2 ? "spike-bloom-right" : "spike-bloom-left")}
+            style={{ bottom: `${index * 0.45}rem` }}
+          />
+        ))}
+      </span>
+    );
+  }
+
+  if (flower.kind === "filler") {
+    return <FillerHead flower={flower} />;
+  }
+
+  return <Bloom tone={flower.tone} accent={flower.accent} form={flower.form} />;
+}
+
+function Bloom({
+  tone,
+  accent,
+  form,
+}: {
+  tone: string;
+  accent?: string;
+  form: FloralChoice["form"];
+}) {
+  const petalCount =
+    form === "peony" ? 16 : form === "ranunculus" ? 18 : form === "carnation" ? 14 : 12;
+  const innerCount = form === "ranunculus" ? 12 : form === "peony" ? 9 : 7;
   return (
     <span
-      className="bloom"
+      className={cn("bloom", `bloom-${form}`)}
       style={{ ["--bloom" as string]: tone, ["--bloom-soft" as string]: accent || tone }}
     >
-      {Array.from({ length: 8 }).map((_, index) => (
+      {Array.from({ length: petalCount }).map((_, index) => (
         <span
           key={index}
           className="bloom-petal"
-          style={{ transform: `translate(-50%, -50%) rotate(${index * 45}deg) translateY(-18px)` }}
+          style={{
+            transform: `translate(-50%, -50%) rotate(${index * (360 / petalCount)}deg) translateY(-19px)`,
+          }}
+        />
+      ))}
+      {Array.from({ length: innerCount }).map((_, index) => (
+        <span
+          key={`inner-${index}`}
+          className="bloom-inner-petal"
+          style={{
+            transform: `translate(-50%, -50%) rotate(${index * (360 / innerCount) + 8}deg) translateY(-10px)`,
+          }}
         />
       ))}
       <span className="bloom-heart" />
@@ -671,41 +907,49 @@ function Bloom({ tone, accent }: { tone: string; accent?: string }) {
   );
 }
 
-function FillerHead({ tone, accent }: { tone: string; accent?: string }) {
+function FillerHead({ flower }: { flower: FloralChoice }) {
+  const tone = flower.tone;
+  const accent = flower.accent;
+  const isBreath = flower.form === "babys-breath" || flower.form === "wax-flower";
+  const isFern = flower.form === "fern" || flower.form === "eucalyptus" || flower.form === "ruscus";
   return (
     <span
-      className="filler-head"
+      className={cn("filler-head", isFern && "filler-head-foliage", isBreath && "filler-head-buds")}
       style={{ ["--bloom" as string]: tone, ["--bloom-soft" as string]: accent || tone }}
     >
-      {Array.from({ length: 7 }).map((_, index) => (
+      {Array.from({ length: isFern ? 10 : 7 }).map((_, index) => (
         <span
           key={index}
           className="filler-leaflet"
-          style={{ transform: `rotate(${index * 28 - 78}deg) translateY(-${18 + index * 2}px)` }}
+          style={{ transform: `rotate(${index * 24 - 88}deg) translateY(-${18 + index * 1.7}px)` }}
         />
       ))}
-      <span className="filler-bud filler-bud-a" />
-      <span className="filler-bud filler-bud-b" />
+      {Array.from({ length: isBreath ? 7 : 2 }).map((_, index) => (
+        <span key={index} className={`filler-bud filler-bud-${index + 1}`} />
+      ))}
     </span>
   );
 }
 
-function MiniBloom({ tone, accent }: { tone: string; accent?: string }) {
+function MiniFlower({ choice }: { choice: FloralChoice }) {
   return (
     <span className="relative inline-block size-4" aria-hidden="true">
-      {Array.from({ length: 6 }).map((_, index) => (
+      {Array.from({ length: choice.kind === "filler" ? 4 : 6 }).map((_, index) => (
         <span
           key={index}
-          className="absolute left-1/2 top-1/2 h-2.5 w-1.5 origin-bottom rounded-full"
+          className={cn(
+            "absolute left-1/2 top-1/2 origin-bottom",
+            choice.kind === "filler" ? "h-2 w-1 rounded-full" : "h-2.5 w-1.5 rounded-full",
+          )}
           style={{
-            background: accent || tone,
-            transform: `translate(-50%, -85%) rotate(${index * 60}deg)`,
+            background: choice.accent || choice.tone,
+            transform: `translate(-50%, -85%) rotate(${index * (choice.kind === "filler" ? 90 : 60)}deg)`,
           }}
         />
       ))}
       <span
         className="absolute left-1/2 top-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full"
-        style={{ background: tone }}
+        style={{ background: choice.tone }}
       />
     </span>
   );

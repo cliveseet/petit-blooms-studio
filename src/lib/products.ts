@@ -14,10 +14,8 @@ import wrapping from "@/assets/product-wrapping.jpg";
 export type Category = "fresh" | "preserved" | "accessories";
 export type Occasion =
   | "celebration"
-  | "anniversary"
   | "birthday"
   | "get-well"
-  | "wedding"
   | "romance"
   | "sympathy"
   | "everyday";
@@ -62,7 +60,7 @@ export const products: Product[] = [
     slug: "petals-and-promises",
     name: "Petals and Promises (Wedding Edition)",
     category: "fresh",
-    occasions: ["wedding", "celebration"],
+    occasions: ["romance", "celebration"],
     basePrice: 50,
     fromPrice: true,
     image: petalsPromises,
@@ -85,7 +83,7 @@ export const products: Product[] = [
     slug: "the-petit-signature",
     name: "The Petit Signature",
     category: "fresh",
-    occasions: ["celebration", "anniversary", "birthday", "get-well"],
+    occasions: ["celebration", "birthday", "get-well", "everyday"],
     basePrice: 45,
     fromPrice: true,
     image: petitSignature,
@@ -131,7 +129,7 @@ export const products: Product[] = [
     slug: "lone-bloom",
     name: "Lone Bloom (Single Rose)",
     category: "fresh",
-    occasions: ["celebration"],
+    occasions: ["romance", "celebration", "everyday"],
     basePrice: 20,
     fromPrice: false,
     image: loneBloom,
@@ -154,7 +152,7 @@ export const products: Product[] = [
     slug: "timeless-love",
     name: "Timeless Love (Roses)",
     category: "fresh",
-    occasions: ["celebration", "anniversary"],
+    occasions: ["romance", "celebration", "birthday"],
     basePrice: 38,
     fromPrice: true,
     image: timelessLove,
@@ -189,7 +187,7 @@ export const products: Product[] = [
     slug: "helios-bloom",
     name: "Helio's Bloom (Sunflower)",
     category: "fresh",
-    occasions: ["celebration", "get-well"],
+    occasions: ["birthday", "celebration", "get-well"],
     basePrice: 30,
     fromPrice: true,
     image: heliosBloom,
@@ -218,7 +216,7 @@ export const products: Product[] = [
     slug: "petal-symphony",
     name: "Petal Symphony (Hydrangea)",
     category: "fresh",
-    occasions: ["celebration"],
+    occasions: ["celebration", "birthday", "everyday"],
     basePrice: 58,
     fromPrice: true,
     image: petalSymphony,
@@ -254,7 +252,7 @@ export const products: Product[] = [
     slug: "springs-whisper",
     name: "Spring's Whisper (Tulips)",
     category: "fresh",
-    occasions: ["celebration", "anniversary", "birthday"],
+    occasions: ["romance", "birthday", "celebration", "get-well"],
     basePrice: 40,
     fromPrice: true,
     image: springsWhisper,
@@ -287,7 +285,7 @@ export const products: Product[] = [
     slug: "carry-my-love",
     name: "Carry My Love With You (Bloom Basket)",
     category: "fresh",
-    occasions: ["celebration", "anniversary", "birthday", "get-well"],
+    occasions: ["birthday", "celebration", "get-well", "everyday"],
     basePrice: 70,
     fromPrice: true,
     image: bloomBasket,
@@ -315,7 +313,7 @@ export const products: Product[] = [
     slug: "eternal-love",
     name: "Eternal Love (Preserved Flowers)",
     category: "preserved",
-    occasions: ["celebration", "anniversary"],
+    occasions: ["romance", "celebration", "sympathy"],
     basePrice: 45,
     fromPrice: false,
     image: eternalLove,
@@ -407,14 +405,12 @@ export const products: Product[] = [
 export const productBySlug = (slug: string) => products.find((p) => p.slug === slug);
 
 export const occasionLabels: Record<Occasion, string> = {
-  celebration: "Celebration",
-  anniversary: "Anniversary",
-  birthday: "Birthday",
-  "get-well": "Get well soon",
-  wedding: "Wedding",
   romance: "Romance",
-  sympathy: "Sympathy",
+  birthday: "Birthday",
+  celebration: "Celebration",
   everyday: "Everyday",
+  "get-well": "Get Well Soon",
+  sympathy: "Sympathy",
 };
 
 export const categoryLabels: Record<Category, string> = {

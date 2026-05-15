@@ -7,14 +7,14 @@ import { cn } from "@/lib/utils";
 import logo from "@/assets/petit-blooms-logo.png";
 
 const leftLinks = [
-  { to: "/", label: "Home" },
+  { to: "/", label: "Studio" },
   { to: "/shop", label: "Ready Bouquets" },
-  { to: "/bespoke", label: "Custom Bouquet" },
+  { to: "/bespoke", label: "Bespoke" },
   { to: "/services", label: "Weddings & Events" },
 ] as const;
 
 const rightLinks = [
-  { to: "/about", label: "About" },
+  { to: "/about", label: "Story" },
   { to: "/contact", label: "Contact" },
 ] as const;
 
@@ -36,12 +36,12 @@ export function Header() {
           {menu ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
 
-        <nav className="hidden items-center justify-end gap-5 lg:gap-7 md:flex">
+        <nav className="hidden min-w-0 items-center justify-start gap-4 lg:gap-6 md:flex">
           {leftLinks.map((l) => (
             <Link
               key={l.to}
               to={l.to}
-              className="text-[10px] uppercase tracking-[0.24em] text-ink/65 transition-colors hover:text-loam lg:text-[11px] lg:tracking-[0.28em]"
+              className="whitespace-nowrap text-[10px] uppercase tracking-[0.2em] text-ink/65 transition-colors hover:text-loam lg:text-[11px] lg:tracking-[0.24em]"
               activeProps={{ className: "text-loam" }}
               activeOptions={{ exact: l.to === "/" }}
             >
@@ -50,17 +50,21 @@ export function Header() {
           ))}
         </nav>
 
-        <Link to="/" aria-label="Petit Blooms home" className="flex items-center justify-center">
+        <Link
+          to="/"
+          aria-label="Petit Blooms home"
+          className="flex items-center justify-center justify-self-center"
+        >
           <img src={logo} alt="Petit Blooms" className="h-12 w-12 object-contain md:h-16 md:w-16" />
         </Link>
 
-        <div className="flex items-center justify-end gap-4 md:justify-start md:gap-5 lg:gap-7">
-          <nav className="hidden items-center gap-5 lg:gap-7 md:flex">
+        <div className="flex min-w-0 items-center justify-end gap-4 md:gap-5 lg:gap-6">
+          <nav className="hidden min-w-0 items-center justify-end gap-4 lg:gap-6 md:flex">
             {rightLinks.map((l) => (
               <Link
                 key={l.to}
                 to={l.to}
-                className="text-[10px] uppercase tracking-[0.24em] text-ink/65 transition-colors hover:text-loam lg:text-[11px] lg:tracking-[0.28em]"
+                className="whitespace-nowrap text-[10px] uppercase tracking-[0.2em] text-ink/65 transition-colors hover:text-loam lg:text-[11px] lg:tracking-[0.24em]"
                 activeProps={{ className: "text-loam" }}
               >
                 {l.label}
@@ -68,7 +72,7 @@ export function Header() {
             ))}
             <Link
               to={session ? (isAdmin ? "/admin" : "/account") : "/login"}
-              className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.24em] text-ink/65 transition-colors hover:text-loam lg:text-[11px] lg:tracking-[0.28em]"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap text-[10px] uppercase tracking-[0.2em] text-ink/65 transition-colors hover:text-loam lg:text-[11px] lg:tracking-[0.24em]"
               activeProps={{ className: "text-loam" }}
             >
               <User className="size-3.5" />

@@ -60,8 +60,13 @@ type HitPayResponse = {
 };
 
 function feeFromDistance(distanceKm: number) {
-  const fee = 25 + Math.ceil(Math.max(0, distanceKm - 5) / 5) * 5;
-  return Math.min(45, Math.max(25, fee));
+  if (distanceKm < 5) return 20;
+  if (distanceKm < 7.5) return 25;
+  if (distanceKm < 10) return 30;
+  if (distanceKm < 12.5) return 35;
+  if (distanceKm < 15) return 40;
+  if (distanceKm < 17.5) return 45;
+  return 50;
 }
 
 let oneMapTokenCache: OneMapTokenCache | null = null;
@@ -206,7 +211,6 @@ async function calculateOneMapDistance(destinationPostal: string) {
 
   return {
     distanceKm: distanceMetres / 1000,
-    durationSeconds: payload.route_summary?.total_time,
   };
 }
 
@@ -229,9 +233,6 @@ export const calculateDeliveryQuote = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const distance = await calculateOneMapDistance(data.postal);
-      const durationMinutes = distance.durationSeconds
-        ? Math.round(distance.durationSeconds / 60)
-        : null;
       const distanceKm = Number(distance.distanceKm.toFixed(2));
 
       return {
@@ -240,9 +241,7 @@ export const calculateDeliveryQuote = createServerFn({ method: "POST" })
         distanceKm,
         source: "onemap" as const,
         checkedAt: new Date().toISOString(),
-        message: durationMinutes
-          ? `Estimated driving distance ${distance.distanceKm.toFixed(1)} km, about ${durationMinutes} minutes.`
-          : `Estimated driving distance ${distance.distanceKm.toFixed(1)} km.`,
+        message: `Estimated driving distance ${distance.distanceKm.toFixed(1)} km.`,
       };
     } catch (error) {
       const hasToken =
@@ -257,7 +256,7 @@ export const calculateDeliveryQuote = createServerFn({ method: "POST" })
 
       return {
         postal: data.postal,
-        fee: 45,
+        fee: 50,
         distanceKm: null,
         source: "maximum_fallback" as const,
         checkedAt: new Date().toISOString(),

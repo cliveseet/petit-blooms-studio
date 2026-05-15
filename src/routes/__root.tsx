@@ -50,12 +50,18 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
-            onClick={() => { router.invalidate(); reset(); }}
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
             className="rounded-full bg-forest px-5 py-2.5 text-sm text-cream hover:bg-forest-deep"
           >
             Try again
           </button>
-          <a href="/" className="rounded-full border border-forest/30 px-5 py-2.5 text-sm text-forest-deep hover:bg-forest/5">
+          <a
+            href="/"
+            className="rounded-full border border-forest/30 px-5 py-2.5 text-sm text-forest-deep hover:bg-forest/5"
+          >
             Go home
           </a>
         </div>
@@ -78,8 +84,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "petit blooms — Build-to-order florals" },
       {
         property: "og:description",
-        content:
-          "Hand-tied bouquets and wedding florals from a WSQ-trained florist in Singapore.",
+        content: "Hand-tied bouquets and wedding florals from a WSQ-trained florist in Singapore.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -95,7 +100,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <head><HeadContent /></head>
+      <head>
+        <HeadContent />
+      </head>
       <body>
         {children}
         <Scripts />

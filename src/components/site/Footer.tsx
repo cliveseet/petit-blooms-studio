@@ -64,13 +64,13 @@ export function Footer() {
               Ready Bouquets
             </Link>
             <Link to="/bespoke" className="hover:text-cream">
-              Custom Bouquet
+              Bespoke
             </Link>
             <Link to="/services" className="hover:text-cream">
               Weddings &amp; Events
             </Link>
             <Link to="/about" className="hover:text-cream">
-              About
+              Story
             </Link>
             <Link to="/contact" className="hover:text-cream">
               Contact

@@ -61,6 +61,14 @@ export const colourSwatches: Record<string, string> = {
 const categories = new Set<Category>(["fresh", "preserved", "accessories"]);
 const occasions = new Set<Occasion>(occasionOptions.map((o) => o.value));
 
+function normaliseOccasion(value: string): Occasion[] {
+  const cleaned = value.trim().toLowerCase();
+  if (occasions.has(cleaned as Occasion)) return [cleaned as Occasion];
+  if (cleaned === "anniversary" || cleaned === "wedding") return ["romance", "celebration"];
+  if (cleaned === "get well" || cleaned === "get well soon") return ["get-well"];
+  return [];
+}
+
 export const defaultProducts: Product[] = localProducts.map((product, index) => ({
   ...product,
   defaultPersonalisationPrompt,
@@ -119,8 +127,8 @@ export function normaliseOptions(value: unknown): OptionGroup[] {
 
 export function rowToProduct(row: MenuItemRow, local?: Product): Product {
   const category = categories.has(row.category as Category) ? (row.category as Category) : "fresh";
-  const rowOccasions = row.occasions.filter((item): item is Occasion =>
-    occasions.has(item as Occasion),
+  const rowOccasions = Array.from(
+    new Set(row.occasions.flatMap((item) => normaliseOccasion(item))),
   );
 
   return {

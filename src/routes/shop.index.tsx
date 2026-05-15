@@ -7,17 +7,7 @@ import { useMenuProducts } from "@/hooks/use-menu-products";
 const searchSchema = z.object({
   category: z.enum(["all", "fresh", "preserved", "accessories"]).catch("all"),
   occasion: z
-    .enum([
-      "all",
-      "romance",
-      "birthday",
-      "sympathy",
-      "wedding",
-      "everyday",
-      "celebration",
-      "anniversary",
-      "get-well",
-    ])
+    .enum(["all", "romance", "birthday", "celebration", "everyday", "get-well", "sympathy"])
     .catch("all"),
 });
 
@@ -63,12 +53,10 @@ function ShopPage() {
     { id: "all", label: "Any occasion" },
     { id: "romance", label: occasionLabels.romance },
     { id: "birthday", label: occasionLabels.birthday },
-    { id: "sympathy", label: occasionLabels.sympathy },
-    { id: "wedding", label: occasionLabels.wedding },
-    { id: "everyday", label: occasionLabels.everyday },
     { id: "celebration", label: occasionLabels.celebration },
-    { id: "anniversary", label: occasionLabels.anniversary },
+    { id: "everyday", label: occasionLabels.everyday },
     { id: "get-well", label: occasionLabels["get-well"] },
+    { id: "sympathy", label: occasionLabels.sympathy },
   ];
 
   return (
@@ -169,6 +157,15 @@ function ShopPage() {
                       <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
                         {categoryLabels[p.category]}
                       </p>
+                      {p.occasions.length > 0 && (
+                        <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-clay/80">
+                          {p.occasions
+                            .map((item) => occasionLabels[item])
+                            .filter(Boolean)
+                            .slice(0, 3)
+                            .join(" · ")}
+                        </p>
+                      )}
                     </div>
                     <p className="font-display text-sm tabular-nums text-ink/80">
                       {p.fromPrice ? "from " : ""}SGD {p.basePrice.toFixed(2)}

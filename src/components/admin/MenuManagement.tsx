@@ -36,7 +36,14 @@ import {
   productToMenuInsert,
   slugify,
 } from "@/lib/menu";
-import type { Category, Occasion, OptionChoice, OptionGroup, Product } from "@/lib/products";
+import {
+  occasionLabels,
+  type Category,
+  type Occasion,
+  type OptionChoice,
+  type OptionGroup,
+  type Product,
+} from "@/lib/products";
 import { cn } from "@/lib/utils";
 import { formatSGD } from "@/lib/cart";
 
@@ -114,6 +121,17 @@ function swatchStyle(value?: string) {
   return value.startsWith("linear-gradient")
     ? { backgroundImage: value }
     : { backgroundColor: value };
+}
+
+function categoryLabel(value: Category) {
+  return categoryOptions.find((option) => option.value === value)?.label ?? value;
+}
+
+function formatOccasions(values: Occasion[]) {
+  return values
+    .map((value) => occasionLabels[value])
+    .filter(Boolean)
+    .join(", ");
 }
 
 async function uploadMenuImage(file: File, slug: string) {
@@ -366,7 +384,8 @@ export function MenuManagement() {
                           {product.name}
                         </p>
                         <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                          {product.category} · {product.occasions.join(", ") || "No occasion"}
+                          {categoryLabel(product.category)} ·{" "}
+                          {formatOccasions(product.occasions) || "No occasion"}
                         </p>
                       </div>
                       <p className="font-display text-base tabular-nums text-loam">
@@ -438,7 +457,7 @@ export function MenuManagement() {
                     </div>
 
                     {confirm?.product.slug === product.slug && (
-                      <div className="mt-4 rounded-xl border hairline bg-cream p-4">
+                      <div className="mt-4 rounded-xl border hairline bg-shell p-4 shadow-[var(--shadow-soft)]">
                         <p className="font-display text-base text-loam">
                           {confirm.type === "archive"
                             ? product.archived
@@ -700,7 +719,7 @@ function ProductEditor({
                 className="aspect-[4/3] w-full rounded-md object-cover"
               />
             )}
-            <label className="group flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-md border hairline bg-cream/55 px-4 py-5 text-center transition-colors hover:border-clay/50 hover:bg-shell">
+            <label className="group flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-xl border hairline bg-shell px-4 py-5 text-center transition-colors hover:border-clay/50 hover:bg-cream/60">
               <ImagePlus className="size-5 text-clay transition-colors group-hover:text-loam" />
               <span className="mt-2 text-xs uppercase tracking-[0.22em] text-loam">
                 Upload image
@@ -752,7 +771,7 @@ function ProductEditor({
                     })
                   }
                   className={cn(
-                    "rounded-md border px-3 py-2 text-xs uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30",
+                    "rounded-full border px-3.5 py-2 text-xs uppercase tracking-[0.16em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/30",
                     active
                       ? "border-loam bg-loam text-cream"
                       : "hairline bg-shell text-ink/75 hover:border-clay/50 hover:text-loam",
@@ -797,18 +816,18 @@ function ProductEditor({
             </Field>
           }
         >
-          <div className="overflow-hidden rounded-md border hairline">
-            <div className="grid grid-cols-2 bg-cream/65 text-[10px] uppercase tracking-[0.22em] text-clay">
-              <div className="border-r hairline px-3 py-2">Stalks</div>
-              <div className="px-3 py-2">Price</div>
+          <div className="rounded-xl border hairline bg-shell p-3">
+            <div className="grid grid-cols-2 gap-3 px-1 pb-2 text-[10px] uppercase tracking-[0.22em] text-clay">
+              <div>Stalks</div>
+              <div>Price</div>
             </div>
-            <div className="divide-y hairline">
+            <div className="grid gap-2">
               {tiers.map((choice, index) => (
-                <div key={`${choice.value}-${index}`} className="grid grid-cols-2">
+                <div key={`${choice.value}-${index}`} className="grid grid-cols-2 gap-3">
                   <Input
                     value={choice.label}
                     onChange={(event) => updateTier(index, { label: event.target.value })}
-                    className="rounded-none border-0 border-r bg-shell focus-visible:ring-0"
+                    className="h-9"
                   />
                   <Input
                     type="number"
@@ -820,7 +839,7 @@ function ProductEditor({
                         setsPriceTo: event.target.value ? Number(event.target.value) : undefined,
                       })
                     }
-                    className="rounded-none border-0 bg-shell focus-visible:ring-0"
+                    className="h-9"
                   />
                 </div>
               ))}
@@ -945,7 +964,7 @@ function TogglePanel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-xl border hairline bg-cream/55 p-4">
+    <section className="rounded-xl border hairline bg-cream/45 p-4">
       <div className="flex items-center justify-between gap-4">
         <p className="text-[10px] uppercase tracking-[0.24em] text-clay">{title}</p>
         <button

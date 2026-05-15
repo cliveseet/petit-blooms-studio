@@ -91,23 +91,27 @@ function ContactPage() {
           </div>
         </div>
 
-        <div className="relative min-h-[560px] md:col-span-6">
-          <div className="absolute right-0 top-0 w-[78%] overflow-hidden rounded-[1.75rem] shadow-[var(--shadow-lift)]">
+        <div className="relative min-h-[520px] md:col-span-6 md:min-h-[600px]">
+          <div className="absolute right-[-1.25rem] top-0 w-[70%] overflow-hidden rounded-l-[2rem] rounded-r-none shadow-[var(--shadow-lift)] md:right-[-2.5rem] md:w-[62%]">
             <img
               src={contactOne}
               alt="Wrapped floral arrangement prepared for a customer"
-              className="aspect-[4/5] w-full object-cover"
-            />
-          </div>
-          <div className="absolute bottom-10 left-0 w-[54%] overflow-hidden rounded-2xl border-[8px] border-cream shadow-[var(--shadow-soft)] md:bottom-14">
-            <img
-              src={contactTwo}
-              alt="Small floral detail with soft petals"
-              className="aspect-[4/3] w-full object-cover"
+              className="h-[430px] w-full object-cover object-center md:h-[600px]"
             />
           </div>
           <div
-            className="absolute bottom-0 right-[8%] h-28 w-[1px] bg-clay/35"
+            className="absolute left-[4%] top-20 h-[1px] w-[28%] bg-clay/35"
+            aria-hidden="true"
+          />
+          <div className="absolute bottom-16 left-0 w-[46%] overflow-hidden rounded-2xl border hairline bg-shell p-2 shadow-[var(--shadow-soft)] md:w-[34%]">
+            <img
+              src={contactTwo}
+              alt="Small floral detail with soft petals"
+              className="aspect-[3/4] w-full rounded-[0.85rem] object-cover object-center"
+            />
+          </div>
+          <div
+            className="absolute bottom-0 left-[42%] h-32 w-[1px] bg-clay/35"
             aria-hidden="true"
           />
         </div>

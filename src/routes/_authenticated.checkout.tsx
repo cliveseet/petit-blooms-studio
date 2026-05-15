@@ -21,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/checkout")({
 });
 
 const TIME_SLOTS = [
+  "No preference",
   "10:00 – 12:00",
   "12:00 – 14:00",
   "14:00 – 16:00",
@@ -34,7 +35,7 @@ function CheckoutPage() {
 
   const [fulfillment, setFulfillment] = useState<"delivery" | "pickup">("delivery");
   const [date, setDate] = useState<Date | undefined>();
-  const [slot, setSlot] = useState<string>("");
+  const [slot, setSlot] = useState<string>("No preference");
   const [address, setAddress] = useState("");
   const [postal, setPostal] = useState(deliveryQuote?.postal ?? "");
   const [voucher, setVoucher] = useState("");
@@ -241,7 +242,9 @@ function CheckoutPage() {
               <Section title="02" heading="Where should we deliver?">
                 <div className="space-y-3">
                   <div>
-                    <Label className="text-xs uppercase tracking-[0.22em] text-clay">Address</Label>
+                    <Label className="text-xs uppercase tracking-[0.22em] text-clay">
+                      Full Address
+                    </Label>
                     <Textarea
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
@@ -338,7 +341,9 @@ function CheckoutPage() {
                   <p className="mt-1.5 text-[11px] text-muted-foreground">2-day lead time.</p>
                 </div>
                 <div>
-                  <Label className="text-xs uppercase tracking-[0.22em] text-clay">Time slot</Label>
+                  <Label className="text-xs uppercase tracking-[0.22em] text-clay">
+                    Time preference
+                  </Label>
                   <div className="mt-2 grid grid-cols-2 gap-2">
                     {TIME_SLOTS.map((s) => (
                       <button
@@ -356,6 +361,10 @@ function CheckoutPage() {
                       </button>
                     ))}
                   </div>
+                  <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
+                    Requested time slots are subject to availability and weather conditions; we will
+                    confirm the closest feasible timing if needed.
+                  </p>
                 </div>
               </div>
             </Section>
@@ -509,7 +518,7 @@ function CheckoutPage() {
                 )}
               </dl>
               {(recipientName || recipientPhone) && (
-                <div className="mt-5 rounded-md border hairline bg-cream/55 p-3 text-xs text-ink/70">
+                <div className="mt-5 rounded-md border hairline bg-cream/45 p-3 text-xs text-ink/70">
                   <p className="uppercase tracking-[0.22em] text-clay">Recipient</p>
                   <p className="mt-1">{recipientName || "Name pending"}</p>
                   <p>{recipientPhone || "Phone pending"}</p>
