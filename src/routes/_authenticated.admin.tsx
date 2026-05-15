@@ -7,6 +7,7 @@ import {
   Flower2,
   Loader2,
   LogOut,
+  Percent,
   RefreshCw,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -24,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { MenuManagement } from "@/components/admin/MenuManagement";
+import { PricingTools } from "@/components/admin/PricingTools";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin — petit blooms" }] }),
@@ -115,7 +117,7 @@ function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [panel, setPanel] = useState<"orders" | "menu">("orders");
+  const [panel, setPanel] = useState<"orders" | "menu" | "pricing">("orders");
   const nav = useNavigate();
 
   const counts = useMemo(
@@ -235,6 +237,7 @@ function AdminPage() {
           {[
             { id: "orders" as const, label: "Order Tracker", Icon: ClipboardList },
             { id: "menu" as const, label: "Menu Management", Icon: Flower2 },
+            { id: "pricing" as const, label: "Pricing Tools", Icon: Percent },
           ].map(({ id, label, Icon }) => {
             const active = panel === id;
             return (
@@ -257,6 +260,10 @@ function AdminPage() {
         {panel === "menu" ? (
           <div className="mt-8">
             <MenuManagement />
+          </div>
+        ) : panel === "pricing" ? (
+          <div className="mt-8">
+            <PricingTools />
           </div>
         ) : (
           <>

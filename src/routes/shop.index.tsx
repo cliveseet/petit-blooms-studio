@@ -154,18 +154,6 @@ function ShopPage() {
                       <p className="font-display text-lg leading-snug text-loam transition-colors group-hover:text-clay">
                         {p.name}
                       </p>
-                      <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                        {categoryLabels[p.category]}
-                      </p>
-                      {p.occasions.length > 0 && (
-                        <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-clay/80">
-                          {p.occasions
-                            .map((item) => occasionLabels[item])
-                            .filter(Boolean)
-                            .slice(0, 3)
-                            .join(" · ")}
-                        </p>
-                      )}
                     </div>
                     <p className="font-display text-sm tabular-nums text-ink/80">
                       {p.fromPrice ? "from " : ""}SGD {p.basePrice.toFixed(2)}

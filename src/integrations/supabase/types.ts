@@ -8,6 +8,45 @@ export type Database = {
   };
   public: {
     Tables: {
+      discount_codes: {
+        Row: {
+          active: boolean;
+          code: string;
+          created_at: string;
+          expires_at: string | null;
+          id: string;
+          label: string;
+          percent_off: number;
+          product_slugs: string[];
+          scope: string;
+          updated_at: string;
+        };
+        Insert: {
+          active?: boolean;
+          code: string;
+          created_at?: string;
+          expires_at?: string | null;
+          id?: string;
+          label: string;
+          percent_off: number;
+          product_slugs?: string[];
+          scope?: string;
+          updated_at?: string;
+        };
+        Update: {
+          active?: boolean;
+          code?: string;
+          created_at?: string;
+          expires_at?: string | null;
+          id?: string;
+          label?: string;
+          percent_off?: number;
+          product_slugs?: string[];
+          scope?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       order_items: {
         Row: {
           created_at: string;
@@ -157,6 +196,45 @@ export type Database = {
         };
         Relationships: [];
       };
+      pricing_adjustments: {
+        Row: {
+          active: boolean;
+          created_at: string;
+          ends_on: string | null;
+          id: string;
+          label: string;
+          percent_change: number;
+          product_slugs: string[];
+          scope: string;
+          starts_on: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          active?: boolean;
+          created_at?: string;
+          ends_on?: string | null;
+          id?: string;
+          label: string;
+          percent_change: number;
+          product_slugs?: string[];
+          scope?: string;
+          starts_on?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          active?: boolean;
+          created_at?: string;
+          ends_on?: string | null;
+          id?: string;
+          label?: string;
+          percent_change?: number;
+          product_slugs?: string[];
+          scope?: string;
+          starts_on?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       menu_items: {
         Row: {
           add_ons: string[];
@@ -284,6 +362,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"];
           _user_id: string;
         };
+        Returns: boolean;
+      };
+      is_admin_user: {
+        Args: Record<PropertyKey, never>;
         Returns: boolean;
       };
     };

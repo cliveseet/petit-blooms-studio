@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import servicesWedding from "@/assets/services-wedding.jpg";
 import weddingPackageOne from "@/assets/services-weddingpackage-1.jpg";
@@ -199,12 +199,14 @@ function ServicesPage() {
                 Share the occasion, colour direction and rough quantity; Denise will suggest a
                 floral direction that feels personal without overwhelming the setting.
               </p>
-              <Link
-                to="/contact"
+              <a
+                href="https://www.instagram.com/petit.blooms"
+                target="_blank"
+                rel="noreferrer"
                 className="mt-7 inline-flex items-center gap-2 rounded-md bg-loam px-5 py-3 text-xs uppercase tracking-[0.22em] text-cream hover:bg-ink"
               >
                 Enquire about event florals <ArrowUpRight className="size-4" />
-              </Link>
+              </a>
             </div>
           </div>
         </div>
@@ -221,7 +223,7 @@ function EditorialImageToggle({ frames }: { frames: Array<{ src: string; alt: st
     if (paused || frames.length < 2) return;
     const timer = window.setInterval(() => {
       setActive((current) => (current + 1) % frames.length);
-    }, 4200);
+    }, 5000);
     return () => window.clearInterval(timer);
   }, [frames.length, paused]);
 
@@ -245,6 +247,7 @@ function EditorialImageToggle({ frames }: { frames: Array<{ src: string; alt: st
             loading="lazy"
             className={cn(
               "absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-700 ease-out",
+              "motion-reduce:transition-none",
               active === index ? "opacity-100 scale-100" : "opacity-0 scale-[1.015]",
             )}
           />

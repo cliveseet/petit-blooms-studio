@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Instagram, Mail, Send, ArrowUpRight } from "lucide-react";
 import contactOne from "@/assets/contact-1.jpg";
-import contactTwo from "@/assets/contact-2.jpg";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -91,29 +90,15 @@ function ContactPage() {
           </div>
         </div>
 
-        <div className="relative min-h-[520px] md:col-span-6 md:min-h-[600px]">
-          <div className="absolute right-[-1.25rem] top-0 w-[70%] overflow-hidden rounded-l-[2rem] rounded-r-none shadow-[var(--shadow-lift)] md:right-[-2.5rem] md:w-[62%]">
+        <div className="relative md:col-span-6">
+          <div className="absolute -left-7 top-10 hidden h-[76%] w-px bg-clay/35 md:block" />
+          <div className="relative ml-auto max-w-[620px] overflow-hidden rounded-[2rem] border hairline bg-shell p-2 shadow-[var(--shadow-lift)]">
             <img
               src={contactOne}
               alt="Wrapped floral arrangement prepared for a customer"
-              className="h-[430px] w-full object-cover object-center md:h-[600px]"
+              className="aspect-[4/3] w-full rounded-[1.45rem] object-contain"
             />
           </div>
-          <div
-            className="absolute left-[4%] top-20 h-[1px] w-[28%] bg-clay/35"
-            aria-hidden="true"
-          />
-          <div className="absolute bottom-16 left-0 w-[46%] overflow-hidden rounded-2xl border hairline bg-shell p-2 shadow-[var(--shadow-soft)] md:w-[34%]">
-            <img
-              src={contactTwo}
-              alt="Small floral detail with soft petals"
-              className="aspect-[3/4] w-full rounded-[0.85rem] object-cover object-center"
-            />
-          </div>
-          <div
-            className="absolute bottom-0 left-[42%] h-32 w-[1px] bg-clay/35"
-            aria-hidden="true"
-          />
         </div>
       </div>
     </section>

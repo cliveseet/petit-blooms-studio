@@ -7,14 +7,13 @@ import { cn } from "@/lib/utils";
 import logo from "@/assets/petit-blooms-logo.png";
 
 const leftLinks = [
-  { to: "/", label: "Studio" },
-  { to: "/shop", label: "Ready Bouquets" },
-  { to: "/bespoke", label: "Bespoke" },
+  { to: "/shop", label: "Our Collection" },
+  { to: "/bespoke", label: "Build Your Bouquet" },
   { to: "/services", label: "Weddings & Events" },
 ] as const;
 
 const rightLinks = [
-  { to: "/about", label: "Story" },
+  { to: "/about", label: "Our Story" },
   { to: "/contact", label: "Contact" },
 ] as const;
 
@@ -26,17 +25,18 @@ export function Header() {
   const [menu, setMenu] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b hairline bg-cream/85 text-ink backdrop-blur-md">
-      <div className="container-page grid h-16 grid-cols-[1fr_auto_1fr] items-center md:h-20">
+    <header className="sticky top-0 z-40 overflow-visible bg-cream/85 text-ink backdrop-blur-md">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 border-b hairline" />
+      <div className="container-page relative grid h-16 grid-cols-[1fr_auto_1fr] items-center md:h-20">
         <button
-          className="justify-self-start md:hidden"
+          className="z-10 col-start-1 justify-self-start md:hidden"
           aria-label="Open menu"
           onClick={() => setMenu((m) => !m)}
         >
           {menu ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
 
-        <nav className="hidden min-w-0 items-center justify-start gap-4 lg:gap-6 md:flex">
+        <nav className="z-10 col-start-1 hidden min-w-0 items-center justify-start gap-4 lg:gap-6 md:flex">
           {leftLinks.map((l) => (
             <Link
               key={l.to}
@@ -53,12 +53,12 @@ export function Header() {
         <Link
           to="/"
           aria-label="Petit Blooms home"
-          className="flex items-center justify-center justify-self-center"
+          className="absolute left-1/2 top-1/2 z-20 flex -translate-x-1/2 -translate-y-[38%] items-center justify-center rounded-full bg-cream/95 px-2 pb-3 pt-1 shadow-[0_14px_32px_oklch(0.235_0.04_152_/_0.08)]"
         >
-          <img src={logo} alt="Petit Blooms" className="h-12 w-12 object-contain md:h-16 md:w-16" />
+          <img src={logo} alt="Petit Blooms" className="h-14 w-14 object-contain md:h-20 md:w-20" />
         </Link>
 
-        <div className="flex min-w-0 items-center justify-end gap-4 md:gap-5 lg:gap-6">
+        <div className="z-10 col-start-3 flex min-w-0 items-center justify-end gap-4 md:gap-5 lg:gap-6">
           <nav className="hidden min-w-0 items-center justify-end gap-4 lg:gap-6 md:flex">
             {rightLinks.map((l) => (
               <Link

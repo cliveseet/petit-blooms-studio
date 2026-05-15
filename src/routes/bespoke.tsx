@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { Check } from "lucide-react";
 import heroBouquet from "@/assets/hero-bouquet.jpg";
 import { Button } from "@/components/ui/button";
@@ -64,6 +64,9 @@ type PaletteChoice = {
   id: string;
   label: string;
   gradient: string;
+  wrapStart: string;
+  wrapEnd: string;
+  ribbon: string;
 };
 
 type SizeChoice = {
@@ -230,19 +233,19 @@ const fillerFlowers: FloralChoice[] = [
 ];
 
 const sizeOptions: SizeChoice[] = [
-  { id: "small", label: "Gesture", short: "S", price: 0, hint: "A compact hand-tied form." },
-  { id: "medium", label: "Signature", short: "M", price: 15, hint: "Balanced volume for gifting." },
+  { id: "small", label: "Petit", short: "P", price: 0, hint: "A compact hand-tied form." },
+  { id: "medium", label: "Maison", short: "M", price: 15, hint: "Balanced volume for gifting." },
   {
     id: "large",
-    label: "Abundant",
+    label: "Luxe",
     short: "L",
     price: 32,
     hint: "A wider face and fuller profile.",
   },
   {
     id: "extra-large",
-    label: "Atelier",
-    short: "XL",
+    label: "Grand",
+    short: "G",
     price: 60,
     hint: "A generous studio-scale arrangement.",
   },
@@ -253,37 +256,85 @@ const palettes: PaletteChoice[] = [
     id: "soft-garden",
     label: "Soft Garden",
     gradient: "linear-gradient(135deg,#f5d3da 0%,#f8e0d4 45%,#d9e4d0 100%)",
+    wrapStart: "#f7ece6",
+    wrapEnd: "#d9e4d0",
+    ribbon: "#2f5a45",
   },
   {
     id: "rosewater",
     label: "Rosewater",
     gradient: "linear-gradient(135deg,#b96a72 0%,#e5aab5 45%,#f6e2dc 100%)",
+    wrapStart: "#f6e2dc",
+    wrapEnd: "#e5aab5",
+    ribbon: "#7e3944",
   },
   {
     id: "buttercream",
     label: "Buttercream",
     gradient: "linear-gradient(135deg,#f4ede1 0%,#e9d5a8 45%,#b9c4a4 100%)",
+    wrapStart: "#fbf1df",
+    wrapEnd: "#e9d5a8",
+    ribbon: "#7b6a3e",
   },
   {
     id: "blue-mist",
     label: "Blue Mist",
     gradient: "linear-gradient(135deg,#6f87aa 0%,#c8d8e9 52%,#f4ede1 100%)",
+    wrapStart: "#eef4f8",
+    wrapEnd: "#c8d8e9",
+    ribbon: "#435d83",
   },
   {
     id: "wine-garden",
     label: "Wine Garden",
     gradient: "linear-gradient(135deg,#5a1a26 0%,#a8323a 38%,#d8b8c0 100%)",
+    wrapStart: "#f0dce0",
+    wrapEnd: "#d8b8c0",
+    ribbon: "#5a1a26",
   },
   {
     id: "denise-choice",
     label: "Denise's Choice",
     gradient: "linear-gradient(135deg,#2f5a45 0%,#d9e4d0 48%,#f4ede1 100%)",
+    wrapStart: "#f4ede1",
+    wrapEnd: "#d9e4d0",
+    ribbon: "#2f5a45",
   },
 ];
 
 const mixedPreview: FloralChoice[] = [fillerFlowers[1], fillerFlowers[2], fillerFlowers[5]].filter(
   Boolean,
 );
+
+type PreviewFlower = {
+  id: string;
+  choice: FloralChoice;
+  groupIndex: number;
+  repeatIndex: number;
+};
+
+const bloomSlots = [
+  { left: 50, top: 23, rotate: -3, scale: 1.08, z: 36 },
+  { left: 42, top: 31, rotate: -14, scale: 0.98, z: 33 },
+  { left: 59, top: 31, rotate: 13, scale: 1, z: 34 },
+  { left: 50, top: 39, rotate: 5, scale: 0.98, z: 40 },
+  { left: 35, top: 42, rotate: -25, scale: 0.88, z: 29 },
+  { left: 66, top: 43, rotate: 22, scale: 0.88, z: 30 },
+  { left: 42, top: 51, rotate: -9, scale: 0.8, z: 37 },
+  { left: 58, top: 51, rotate: 14, scale: 0.8, z: 38 },
+  { left: 50, top: 57, rotate: -1, scale: 0.76, z: 39 },
+];
+
+const fillerSlots = [
+  { left: 32, top: 24, rotate: -32, scale: 0.86, z: 18 },
+  { left: 68, top: 24, rotate: 32, scale: 0.86, z: 18 },
+  { left: 25, top: 38, rotate: -50, scale: 0.8, z: 20 },
+  { left: 75, top: 39, rotate: 50, scale: 0.8, z: 20 },
+  { left: 41, top: 18, rotate: -14, scale: 0.76, z: 17 },
+  { left: 59, top: 18, rotate: 16, scale: 0.76, z: 17 },
+  { left: 35, top: 53, rotate: -22, scale: 0.68, z: 28 },
+  { left: 65, top: 53, rotate: 22, scale: 0.68, z: 28 },
+];
 
 function BespokePage() {
   const [main, setMain] = useState<string[]>(["rose"]);
@@ -311,20 +362,25 @@ function BespokePage() {
         .filter(Boolean) as FloralChoice[],
     [fillers],
   );
-  const previewFlowers = useMemo(() => {
+  const previewFlowers = useMemo<PreviewFlower[]>(() => {
     const expandedFillers = fillers.includes("mixed-fillers") ? mixedPreview : fillerSelections;
-    const fullerMain = mainSelections.flatMap((flower, index) =>
-      index === 0 ? [flower, flower] : [flower],
+    const fillerPreview = expandedFillers.flatMap((flower, groupIndex) =>
+      Array.from({ length: 2 }, (_, repeatIndex) => ({
+        id: `filler-${flower.id}-${groupIndex}-${repeatIndex}`,
+        choice: flower,
+        groupIndex,
+        repeatIndex,
+      })),
     );
-    const fullerFillers = expandedFillers.flatMap((flower, index) =>
-      index === 0 ? [flower, flower] : [flower],
+    const mainPreview = mainSelections.flatMap((flower, groupIndex) =>
+      Array.from({ length: 3 }, (_, repeatIndex) => ({
+        id: `main-${flower.id}-${groupIndex}-${repeatIndex}`,
+        choice: flower,
+        groupIndex,
+        repeatIndex,
+      })),
     );
-    return [
-      ...fullerFillers.slice(0, 2),
-      ...fullerMain,
-      ...fullerFillers.slice(2),
-      ...fullerMain.slice(0, 1),
-    ].slice(0, 9);
+    return [...fillerPreview, ...mainPreview];
   }, [fillerSelections, fillers, mainSelections]);
   const menuFlowers = useMemo(
     () =>
@@ -546,7 +602,7 @@ function ChoiceSection({
                 <span
                   className={cn(
                     "inline-flex size-9 items-center justify-center rounded-full border",
-                    active ? "border-cream/40 bg-cream/10" : "hairline bg-cream",
+                    active ? "border-cream/40 bg-cream/10" : "hairline bg-shell",
                   )}
                 >
                   {active ? <Check className="size-4" /> : <MiniFlower choice={choice} />}
@@ -582,7 +638,7 @@ function SizeSection({
     <section>
       <div className="flex items-baseline gap-3">
         <span className="font-display text-clay tabular-nums">03</span>
-        <h2 className="font-display text-xl text-loam md:text-2xl">Bouquet scale</h2>
+        <h2 className="font-display text-xl text-loam md:text-2xl">Size</h2>
       </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
         {sizeOptions.map((choice) => {
@@ -682,7 +738,7 @@ function BouquetPreview({
   size,
   flight,
 }: {
-  flowers: FloralChoice[];
+  flowers: PreviewFlower[];
   palette: PaletteChoice;
   size: SizeChoice;
   flight: { key: number; choice: FloralChoice; lane: number } | null;
@@ -690,7 +746,16 @@ function BouquetPreview({
   const sizeScale = { small: 0.96, medium: 1.05, large: 1.14, "extra-large": 1.22 }[size.id];
 
   return (
-    <div className="bouquet-stage relative min-h-[560px] overflow-hidden rounded-[2rem] border hairline bg-shell shadow-[var(--shadow-lift)]">
+    <div
+      className="bouquet-stage relative min-h-[560px] overflow-hidden rounded-[2rem] border hairline bg-shell shadow-[var(--shadow-lift)]"
+      style={
+        {
+          ["--wrap-start" as string]: palette.wrapStart,
+          ["--wrap-end" as string]: palette.wrapEnd,
+          ["--wrap-ribbon" as string]: palette.ribbon,
+        } as CSSProperties
+      }
+    >
       <div
         className="absolute inset-0 opacity-[0.13]"
         style={{ backgroundImage: palette.gradient }}
@@ -704,16 +769,15 @@ function BouquetPreview({
       <div className="absolute inset-0 bg-cream/74" />
       <div className="absolute inset-x-0 bottom-0 flex h-[86%] items-end justify-center pb-12">
         <div
-          className="relative h-[410px] w-[350px]"
+          className="bouquet-arrangement relative h-[410px] w-[350px]"
           style={{ transform: `scale(${sizeScale})`, transformOrigin: "50% 100%" }}
         >
-          <div className="bouquet-paper bouquet-paper-left" />
-          <div className="bouquet-paper bouquet-paper-right" />
-          <div className="bouquet-ribbon" />
           <div className="bouquet-shadow" />
-          {flowers.map((flower, index) => (
-            <FlowerStem key={`${flower.id}-${index}`} flower={flower} index={index} />
+          <BouquetGreenery />
+          {flowers.map((stem, index) => (
+            <BouquetBloom key={stem.id} stem={stem} index={index} />
           ))}
+          <BouquetWrap />
           {flight && <FlyingFlower key={flight.key} flower={flight.choice} lane={flight.lane} />}
         </div>
       </div>
@@ -721,34 +785,83 @@ function BouquetPreview({
   );
 }
 
-function FlowerStem({ flower, index }: { flower: FloralChoice; index: number }) {
-  const slots = [
-    { left: 49, bottom: 72, rotate: -6, scale: 1.1 },
-    { left: 39, bottom: 62, rotate: -21, scale: 0.93 },
-    { left: 60, bottom: 64, rotate: 17, scale: 0.98 },
-    { left: 47, bottom: 50, rotate: -12, scale: 0.9 },
-    { left: 66, bottom: 50, rotate: 28, scale: 0.82 },
-    { left: 31, bottom: 48, rotate: -34, scale: 0.78 },
-    { left: 55, bottom: 42, rotate: 8, scale: 0.82 },
-    { left: 42, bottom: 38, rotate: -24, scale: 0.72 },
-    { left: 70, bottom: 38, rotate: 36, scale: 0.68 },
-  ];
+function BouquetGreenery() {
+  return (
+    <svg className="bouquet-greenery" viewBox="0 0 320 340" aria-hidden="true">
+      {[
+        ["M154 255 C123 189 91 132 50 68 C93 111 128 171 166 255 Z", -14],
+        ["M166 255 C199 187 233 130 273 72 C232 114 196 174 154 255 Z", 14],
+        ["M158 252 C136 179 132 121 139 70 C157 133 165 190 168 252 Z", -3],
+        ["M164 252 C188 184 200 127 197 72 C174 132 160 190 154 252 Z", 7],
+      ].map(([path, rotate], index) => (
+        <path
+          key={`stem-${index}`}
+          className="bouquet-greenery-stem"
+          d={path}
+          transform={`rotate(${rotate} 160 260)`}
+        />
+      ))}
+      {[
+        [70, 104, -38, 1],
+        [98, 148, -34, 0.92],
+        [123, 190, -28, 0.86],
+        [241, 109, 38, 1],
+        [216, 151, 34, 0.92],
+        [190, 193, 28, 0.86],
+        [147, 93, -12, 0.9],
+        [180, 96, 16, 0.9],
+        [115, 122, -18, 0.78],
+        [211, 125, 20, 0.78],
+      ].map(([x, y, rotate, scale], index) => (
+        <path
+          key={`leaf-${index}`}
+          className="bouquet-greenery-leaf"
+          d="M0 0 C-22 -9 -30 -31 -18 -48 C4 -39 15 -17 0 0 Z"
+          transform={`translate(${x} ${y}) rotate(${rotate}) scale(${scale})`}
+        />
+      ))}
+    </svg>
+  );
+}
+
+function BouquetWrap() {
+  return (
+    <svg className="bouquet-wrap" viewBox="0 0 260 260" aria-hidden="true">
+      <path
+        className="bouquet-wrap-paper"
+        d="M37 74 C70 104 100 124 130 245 C160 124 190 104 223 74 C203 137 178 198 130 245 C82 198 57 137 37 74 Z"
+      />
+      <path
+        className="bouquet-wrap-fold"
+        d="M52 88 C86 121 110 154 130 245 C116 160 92 110 52 88 Z"
+      />
+      <path
+        className="bouquet-wrap-fold"
+        d="M208 88 C174 121 150 154 130 245 C144 160 168 110 208 88 Z"
+      />
+      <path
+        className="bouquet-wrap-ribbon"
+        d="M78 173 C104 166 156 166 182 173 C184 184 178 191 160 190 C148 190 140 185 130 185 C120 185 112 190 100 190 C82 191 76 184 78 173 Z"
+      />
+    </svg>
+  );
+}
+
+function BouquetBloom({ stem, index }: { stem: PreviewFlower; index: number }) {
+  const slots = stem.choice.kind === "filler" ? fillerSlots : bloomSlots;
   const slot = slots[index % slots.length];
 
   return (
     <div
-      className="bouquet-stem absolute"
+      className="bouquet-bloom absolute"
       style={{
         left: `${slot.left}%`,
-        bottom: `${slot.bottom}px`,
-        transform: `translateX(-50%) rotate(${slot.rotate}deg) scale(${slot.scale})`,
-        zIndex: 20 + index,
+        top: `${slot.top}%`,
+        transform: `translate(-50%, -50%) rotate(${slot.rotate}deg) scale(${slot.scale})`,
+        zIndex: slot.z,
       }}
     >
-      <span className="flower-stalk" />
-      <span className="flower-leaf flower-leaf-a" />
-      <span className="flower-leaf flower-leaf-b" />
-      <FlowerHead flower={flower} />
+      <FlowerVector flower={stem.choice} />
     </div>
   );
 }
@@ -756,203 +869,224 @@ function FlowerStem({ flower, index }: { flower: FloralChoice; index: number }) 
 function FlyingFlower({ flower, lane }: { flower: FloralChoice; lane: number }) {
   return (
     <div className="bouquet-flight absolute" style={{ ["--lane" as string]: lane, zIndex: 60 }}>
-      <span className="flower-stalk" />
-      <span className="flower-leaf flower-leaf-a" />
-      <span className="flower-leaf flower-leaf-b" />
-      <FlowerHead flower={flower} />
+      <FlowerVector flower={flower} />
     </div>
   );
 }
 
-function FlowerHead({ flower }: { flower: FloralChoice }) {
+function FlowerVector({ flower, mini = false }: { flower: FloralChoice; mini?: boolean }) {
   const style = {
     ["--bloom" as string]: flower.tone,
     ["--bloom-soft" as string]: flower.accent || flower.tone,
-  };
+  } as CSSProperties;
 
+  return (
+    <svg
+      viewBox="0 0 120 160"
+      aria-hidden="true"
+      className={cn("flower-vector", mini && "flower-vector-mini")}
+      style={style}
+    >
+      <path
+        className="flower-vector-stem"
+        d="M57 156 C56 126 59 102 58 75 C61 73 64 73 66 75 C64 103 63 128 64 156 Z"
+      />
+      <path className="flower-vector-leaf" d="M59 113 C40 96 33 91 19 94 C30 110 42 116 59 113 Z" />
+      <path
+        className="flower-vector-leaf flower-vector-leaf-b"
+        d="M63 126 C82 111 91 106 104 111 C91 126 78 131 63 126 Z"
+      />
+      {flower.kind === "filler" ? (
+        <FillerVector flower={flower} />
+      ) : (
+        <BloomVector flower={flower} />
+      )}
+    </svg>
+  );
+}
+
+function BloomVector({ flower }: { flower: FloralChoice }) {
   if (flower.form === "rose") {
     return (
-      <span className="flower-head rose-head" style={style}>
-        {Array.from({ length: 16 }).map((_, index) => (
-          <span
-            key={`outer-${index}`}
-            className="rose-petal rose-petal-outer"
-            style={{
-              transform: `translate(-50%, -50%) rotate(${index * 22.5}deg) translateY(-24px)`,
-            }}
+      <g className="flower-vector-head">
+        {Array.from({ length: 14 }).map((_, index) => (
+          <path
+            key={`rose-outer-${index}`}
+            className="flower-vector-petal flower-vector-petal-soft"
+            d="M60 56 C48 42 50 23 60 15 C72 24 73 42 60 56 Z"
+            transform={`rotate(${index * 25.7} 60 58) translate(0 -16)`}
           />
         ))}
-        {Array.from({ length: 10 }).map((_, index) => (
-          <span
-            key={`inner-${index}`}
-            className="rose-petal rose-petal-inner"
-            style={{
-              transform: `translate(-50%, -50%) rotate(${index * 36 + 12}deg) translateY(-12px)`,
-            }}
+        {Array.from({ length: 8 }).map((_, index) => (
+          <path
+            key={`rose-inner-${index}`}
+            className="flower-vector-petal"
+            d="M60 60 C51 51 52 37 60 31 C68 38 69 51 60 60 Z"
+            transform={`rotate(${index * 45 + 12} 60 59) translate(0 -7)`}
           />
         ))}
-        <span className="rose-core" />
-      </span>
+        <path className="flower-vector-core" d="M51 57 C54 47 66 47 70 56 C67 67 55 68 51 57 Z" />
+      </g>
     );
   }
 
   if (flower.form === "tulip" || flower.form === "calla") {
     return (
-      <span
-        className={cn("flower-head", flower.form === "calla" ? "calla-head" : "tulip-head")}
-        style={style}
-      >
-        <span className="cup-petal cup-petal-a" />
-        <span className="cup-petal cup-petal-b" />
-        <span className="cup-petal cup-petal-c" />
-      </span>
+      <g className="flower-vector-head">
+        <path
+          className="flower-vector-petal flower-vector-petal-soft"
+          d="M60 68 C45 53 43 26 57 13 C70 29 72 51 60 68 Z"
+        />
+        <path className="flower-vector-petal" d="M57 70 C39 59 33 35 45 18 C60 31 63 52 57 70 Z" />
+        <path className="flower-vector-petal" d="M63 70 C82 59 87 35 75 18 C61 31 58 52 63 70 Z" />
+      </g>
     );
   }
 
   if (flower.form === "sunflower") {
     return (
-      <span className="flower-head sunflower-head" style={style}>
+      <g className="flower-vector-head">
         {Array.from({ length: 18 }).map((_, index) => (
-          <span
-            key={index}
-            className="sunflower-petal"
-            style={{
-              transform: `translate(-50%, -50%) rotate(${index * 20}deg) translateY(-27px)`,
-            }}
+          <path
+            key={`sunflower-${index}`}
+            className="flower-vector-petal"
+            d="M60 55 C52 42 54 29 60 18 C67 29 69 42 60 55 Z"
+            transform={`rotate(${index * 20} 60 58) translate(0 -19)`}
           />
         ))}
-        <span className="sunflower-heart" />
-      </span>
+        <path
+          className="flower-vector-core flower-vector-core-dark"
+          d="M43 58 C45 43 74 43 77 58 C75 75 46 75 43 58 Z"
+        />
+      </g>
     );
   }
 
   if (flower.form === "hydrangea") {
+    const clusters = [
+      [60, 52, 1],
+      [45, 45, 0.9],
+      [76, 45, 0.9],
+      [41, 61, 0.85],
+      [79, 61, 0.85],
+      [57, 70, 0.82],
+      [67, 32, 0.76],
+    ];
     return (
-      <span className="flower-head hydrangea-head" style={style}>
-        {Array.from({ length: 9 }).map((_, index) => (
-          <span key={index} className={`hydrangea-cluster hydrangea-${index + 1}`}>
-            {Array.from({ length: 4 }).map((__, petal) => (
-              <span
+      <g className="flower-vector-head">
+        {clusters.map(([x, y, scale], index) => (
+          <g key={index} transform={`translate(${x} ${y}) scale(${scale})`}>
+            {Array.from({ length: 4 }).map((_, petal) => (
+              <path
                 key={petal}
-                className="hydrangea-petal"
-                style={{
-                  transform: `translate(-50%, -50%) rotate(${petal * 90}deg) translateY(-5px)`,
-                }}
+                className="flower-vector-petal"
+                d="M0 0 C-8 -5 -8 -17 0 -22 C8 -17 8 -5 0 0 Z"
+                transform={`rotate(${petal * 90})`}
               />
             ))}
-          </span>
+          </g>
         ))}
-      </span>
+      </g>
     );
   }
 
   if (flower.form === "snapdragon" || flower.form === "matthiola") {
     return (
-      <span className="flower-head spike-head" style={style}>
-        {Array.from({ length: 9 }).map((_, index) => (
-          <span
+      <g className="flower-vector-head">
+        <path className="flower-vector-spike" d="M58 82 C57 55 59 30 61 13 C64 30 64 55 62 82 Z" />
+        {Array.from({ length: 8 }).map((_, index) => (
+          <path
             key={index}
-            className={cn("spike-bloom", index % 2 ? "spike-bloom-right" : "spike-bloom-left")}
-            style={{ bottom: `${index * 0.45}rem` }}
+            className="flower-vector-petal"
+            d="M60 70 C48 65 47 52 59 49 C70 53 70 65 60 70 Z"
+            transform={`translate(${index % 2 ? 9 : -9} ${-index * 7}) rotate(${index % 2 ? 18 : -18} 60 70) scale(${1 - index * 0.035})`}
           />
         ))}
-      </span>
+      </g>
     );
   }
 
-  if (flower.kind === "filler") {
-    return <FillerHead flower={flower} />;
-  }
-
-  return <Bloom tone={flower.tone} accent={flower.accent} form={flower.form} />;
-}
-
-function Bloom({
-  tone,
-  accent,
-  form,
-}: {
-  tone: string;
-  accent?: string;
-  form: FloralChoice["form"];
-}) {
   const petalCount =
-    form === "peony" ? 16 : form === "ranunculus" ? 18 : form === "carnation" ? 14 : 12;
-  const innerCount = form === "ranunculus" ? 12 : form === "peony" ? 9 : 7;
+    flower.form === "peony"
+      ? 18
+      : flower.form === "ranunculus"
+        ? 20
+        : flower.form === "carnation"
+          ? 16
+          : 12;
+  const innerCount = flower.form === "ranunculus" ? 11 : flower.form === "peony" ? 9 : 7;
   return (
-    <span
-      className={cn("bloom", `bloom-${form}`)}
-      style={{ ["--bloom" as string]: tone, ["--bloom-soft" as string]: accent || tone }}
-    >
+    <g className="flower-vector-head">
       {Array.from({ length: petalCount }).map((_, index) => (
-        <span
-          key={index}
-          className="bloom-petal"
-          style={{
-            transform: `translate(-50%, -50%) rotate(${index * (360 / petalCount)}deg) translateY(-19px)`,
-          }}
+        <path
+          key={`outer-${index}`}
+          className="flower-vector-petal flower-vector-petal-soft"
+          d="M60 58 C49 45 51 28 60 18 C70 28 72 45 60 58 Z"
+          transform={`rotate(${index * (360 / petalCount)} 60 58) translate(0 -15)`}
         />
       ))}
       {Array.from({ length: innerCount }).map((_, index) => (
-        <span
+        <path
           key={`inner-${index}`}
-          className="bloom-inner-petal"
-          style={{
-            transform: `translate(-50%, -50%) rotate(${index * (360 / innerCount) + 8}deg) translateY(-10px)`,
-          }}
+          className="flower-vector-petal"
+          d="M60 60 C52 51 53 39 60 32 C67 39 68 51 60 60 Z"
+          transform={`rotate(${index * (360 / innerCount) + 8} 60 59) translate(0 -7)`}
         />
       ))}
-      <span className="bloom-heart" />
-    </span>
+      <path
+        className={cn("flower-vector-core", flower.form === "anemone" && "flower-vector-core-dark")}
+        d="M50 59 C53 49 67 49 70 59 C67 70 53 70 50 59 Z"
+      />
+    </g>
   );
 }
 
-function FillerHead({ flower }: { flower: FloralChoice }) {
-  const tone = flower.tone;
-  const accent = flower.accent;
-  const isBreath = flower.form === "babys-breath" || flower.form === "wax-flower";
-  const isFern = flower.form === "fern" || flower.form === "eucalyptus" || flower.form === "ruscus";
+function FillerVector({ flower }: { flower: FloralChoice }) {
+  const budForms = flower.form === "babys-breath" || flower.form === "wax-flower";
+  if (budForms) {
+    return (
+      <g className="flower-vector-head">
+        <path className="flower-vector-spike" d="M58 96 C57 65 59 33 61 12 C64 35 65 67 62 96 Z" />
+        {[
+          [44, 41],
+          [73, 34],
+          [38, 63],
+          [78, 61],
+          [55, 22],
+          [63, 79],
+        ].map(([x, y], index) => (
+          <g key={index} transform={`translate(${x} ${y}) scale(0.72)`}>
+            {Array.from({ length: 5 }).map((_, petal) => (
+              <path
+                key={petal}
+                className="flower-vector-filler-petal"
+                d="M0 0 C-5 -4 -5 -11 0 -14 C5 -11 5 -4 0 0 Z"
+                transform={`rotate(${petal * 72})`}
+              />
+            ))}
+          </g>
+        ))}
+      </g>
+    );
+  }
+
   return (
-    <span
-      className={cn("filler-head", isFern && "filler-head-foliage", isBreath && "filler-head-buds")}
-      style={{ ["--bloom" as string]: tone, ["--bloom-soft" as string]: accent || tone }}
-    >
-      {Array.from({ length: isFern ? 10 : 7 }).map((_, index) => (
-        <span
+    <g className="flower-vector-head">
+      <path className="flower-vector-spike" d="M58 104 C55 70 57 36 61 10 C66 39 67 74 62 104 Z" />
+      {Array.from({ length: 10 }).map((_, index) => (
+        <path
           key={index}
-          className="filler-leaflet"
-          style={{ transform: `rotate(${index * 24 - 88}deg) translateY(-${18 + index * 1.7}px)` }}
+          className="flower-vector-foliage-leaf"
+          d="M60 62 C43 55 37 43 43 31 C58 37 65 49 60 62 Z"
+          transform={`translate(${index % 2 ? 10 : -10} ${-index * 7}) rotate(${index % 2 ? 38 : -38} 60 62) scale(${1 - index * 0.035})`}
         />
       ))}
-      {Array.from({ length: isBreath ? 7 : 2 }).map((_, index) => (
-        <span key={index} className={`filler-bud filler-bud-${index + 1}`} />
-      ))}
-    </span>
+    </g>
   );
 }
 
 function MiniFlower({ choice }: { choice: FloralChoice }) {
-  return (
-    <span className="relative inline-block size-4" aria-hidden="true">
-      {Array.from({ length: choice.kind === "filler" ? 4 : 6 }).map((_, index) => (
-        <span
-          key={index}
-          className={cn(
-            "absolute left-1/2 top-1/2 origin-bottom",
-            choice.kind === "filler" ? "h-2 w-1 rounded-full" : "h-2.5 w-1.5 rounded-full",
-          )}
-          style={{
-            background: choice.accent || choice.tone,
-            transform: `translate(-50%, -85%) rotate(${index * (choice.kind === "filler" ? 90 : 60)}deg)`,
-          }}
-        />
-      ))}
-      <span
-        className="absolute left-1/2 top-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full"
-        style={{ background: choice.tone }}
-      />
-    </span>
-  );
+  return <FlowerVector flower={choice} mini />;
 }
 
 function PriceRow({ label, value }: { label: string; value: number }) {

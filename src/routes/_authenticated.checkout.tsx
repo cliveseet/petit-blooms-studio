@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { useCart, formatSGD } from "@/lib/cart";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateDeliveryQuote, createHitPayPayment } from "@/lib/checkout-server";
+import { calculateDiscountAmount, isDiscountUsable, type DiscountCodeRow } from "@/lib/promotions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,14 +21,7 @@ export const Route = createFileRoute("/_authenticated/checkout")({
   component: CheckoutPage,
 });
 
-const TIME_SLOTS = [
-  "No preference",
-  "10:00 – 12:00",
-  "12:00 – 14:00",
-  "14:00 – 16:00",
-  "16:00 – 18:00",
-  "18:00 – 20:00",
-];
+const TIME_SLOTS = ["No Preference", "08:00 – 12:00", "12:00 – 18:00", "18:00 – 22:00"];
 function CheckoutPage() {
   const { user } = useAuth();
   const { lines, subtotal, deliveryQuote, setDeliveryQuote, clear } = useCart();
@@ -35,13 +29,16 @@ function CheckoutPage() {
 
   const [fulfillment, setFulfillment] = useState<"delivery" | "pickup">("delivery");
   const [date, setDate] = useState<Date | undefined>();
-  const [slot, setSlot] = useState<string>("No preference");
+  const [slot, setSlot] = useState<string>("No Preference");
   const [address, setAddress] = useState("");
   const [postal, setPostal] = useState(deliveryQuote?.postal ?? "");
   const [voucher, setVoucher] = useState("");
-  const [voucherApplied, setVoucherApplied] = useState<{ code: string; discount: number } | null>(
-    null,
-  );
+  const [voucherApplied, setVoucherApplied] = useState<{
+    code: string;
+    label: string;
+    discount: number;
+    percentOff: number;
+  } | null>(null);
   const [name, setName] = useState(user?.user_metadata?.full_name ?? "");
   const [phone, setPhone] = useState("");
   const [recipientName, setRecipientName] = useState("");
@@ -50,6 +47,7 @@ function CheckoutPage() {
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
   const [checkingFee, setCheckingFee] = useState(false);
+  const [applyingVoucher, setApplyingVoucher] = useState(false);
 
   const activeDeliveryQuote = deliveryQuote?.postal === postal ? deliveryQuote : null;
   const deliveryFee = useMemo(() => {
@@ -61,19 +59,47 @@ function CheckoutPage() {
   const discount = voucherApplied?.discount ?? 0;
   const total = Math.max(0, subtotal + deliveryFee - discount);
 
-  const applyVoucher = () => {
-    const code = voucher.trim().toUpperCase();
+  const applyVoucher = async () => {
+    const code = voucher
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9_-]/g, "");
     if (!code) return;
-    if (code === "BLOOM10") {
-      const d = subtotal * 0.1;
-      setVoucherApplied({ code, discount: d });
-      toast.success(`Voucher applied: 10% off (−${formatSGD(d)})`);
-    } else if (code === "PETIT5") {
-      setVoucherApplied({ code, discount: 5 });
-      toast.success(`Voucher applied: ${formatSGD(5)} off`);
-    } else {
-      toast.error("Voucher not recognised.");
+
+    setApplyingVoucher(true);
+    const { data, error } = await supabase
+      .from("discount_codes")
+      .select("*")
+      .eq("code", code)
+      .maybeSingle();
+    setApplyingVoucher(false);
+
+    if (error) {
+      toast.error(error.message);
+      return;
     }
+
+    const discountCode = data as DiscountCodeRow | null;
+    if (!discountCode || !isDiscountUsable(discountCode)) {
+      toast.error("Voucher not recognised.");
+      return;
+    }
+
+    const { eligibleSubtotal, discount } = calculateDiscountAmount(discountCode, lines);
+    if (eligibleSubtotal <= 0 || discount <= 0) {
+      toast.error("This voucher does not apply to the items in your bag.");
+      return;
+    }
+
+    setVoucherApplied({
+      code,
+      label: discountCode.label,
+      discount,
+      percentOff: Number(discountCode.percent_off),
+    });
+    toast.success(
+      `Voucher applied: ${Number(discountCode.percent_off)}% off (−${formatSGD(discount)})`,
+    );
   };
 
   const valid =
@@ -232,7 +258,7 @@ function CheckoutPage() {
                   onClick={() => setFulfillment("pickup")}
                   icon={<MapPin className="size-4" />}
                   label="Self-collection"
-                  hint="Bishan St 12, S570111."
+                  hint="Blk 111, Bishan St 12, S570111."
                 />
               </div>
             </Section>
@@ -449,21 +475,28 @@ function CheckoutPage() {
               <div className="flex items-center gap-2">
                 <Input
                   value={voucher}
-                  onChange={(e) => setVoucher(e.target.value)}
+                  onChange={(e) => {
+                    setVoucher(e.target.value);
+                    setVoucherApplied(null);
+                  }}
                   placeholder="Discount code"
                   className="flex-1"
                 />
-                <Button type="button" variant="outline" onClick={applyVoucher}>
-                  Apply
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={applyingVoucher}
+                  onClick={() => void applyVoucher()}
+                >
+                  {applyingVoucher ? "Checking" : "Apply"}
                 </Button>
               </div>
               {voucherApplied && (
                 <p className="mt-2 inline-flex items-center gap-2 text-xs text-clay">
-                  <Check className="size-3" /> {voucherApplied.code} · −
+                  <Check className="size-3" /> {voucherApplied.code} · {voucherApplied.label} · −
                   {formatSGD(voucherApplied.discount)}
                 </p>
               )}
-              <p className="mt-1.5 text-[11px] text-muted-foreground">Try BLOOM10 or PETIT5.</p>
             </Section>
           </div>
 
@@ -518,7 +551,7 @@ function CheckoutPage() {
                 )}
               </dl>
               {(recipientName || recipientPhone) && (
-                <div className="mt-5 rounded-md border hairline bg-cream/45 p-3 text-xs text-ink/70">
+                <div className="mt-5 rounded-md border hairline bg-shell p-3 text-xs text-ink/70">
                   <p className="uppercase tracking-[0.22em] text-clay">Recipient</p>
                   <p className="mt-1">{recipientName || "Name pending"}</p>
                   <p>{recipientPhone || "Phone pending"}</p>

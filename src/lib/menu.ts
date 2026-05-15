@@ -8,6 +8,7 @@ import {
   type Product,
 } from "@/lib/products";
 import type { Database, Json } from "@/integrations/supabase/types";
+import { applyPricingAdjustments, type PricingAdjustmentRow } from "@/lib/promotions";
 
 export type MenuItemRow = Database["public"]["Tables"]["menu_items"]["Row"];
 export type MenuItemInsert = Database["public"]["Tables"]["menu_items"]["Insert"];
@@ -153,7 +154,11 @@ export function rowToProduct(row: MenuItemRow, local?: Product): Product {
   };
 }
 
-export function mergeMenuProducts(rows: MenuItemRow[] = [], includeArchived = false): Product[] {
+export function mergeMenuProducts(
+  rows: MenuItemRow[] = [],
+  includeArchived = false,
+  pricingAdjustments: PricingAdjustmentRow[] = [],
+): Product[] {
   const map = new Map<string, Product>();
   for (const product of defaultProducts) {
     map.set(product.slug, product);
@@ -170,6 +175,7 @@ export function mergeMenuProducts(rows: MenuItemRow[] = [], includeArchived = fa
 
   return Array.from(map.values())
     .filter((product) => includeArchived || !product.archived)
+    .map((product) => applyPricingAdjustments(product, pricingAdjustments))
     .sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999) || a.name.localeCompare(b.name));
 }
 

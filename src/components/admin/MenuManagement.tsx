@@ -165,7 +165,7 @@ function colourChoices(draft: Draft) {
 }
 
 export function MenuManagement() {
-  const { products, loading, error, refresh } = useMenuProducts(true);
+  const { products, loading, error, refresh } = useMenuProducts(true, false);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
@@ -326,6 +326,9 @@ export function MenuManagement() {
     await refresh();
   };
 
+  const liveProducts = products.filter((product) => !product.archived);
+  const archivedProducts = products.filter((product) => product.archived);
+
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(380px,480px)]">
       <section className="overflow-hidden rounded-2xl border hairline bg-shell shadow-[var(--shadow-soft)]">
@@ -365,138 +368,40 @@ export function MenuManagement() {
               <Loader2 className="size-4 animate-spin text-clay" />
               Loading menu...
             </div>
+          ) : products.length === 0 ? (
+            <div className="min-h-60 px-6 py-16 text-center">
+              <p className="font-serif-italic text-xl text-loam">No menu pieces yet.</p>
+              <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+                Choose New item to add the first bouquet to the collection.
+              </p>
+            </div>
           ) : (
-            products.map((product, index) => (
-              <article key={product.slug} className="px-5 py-5 md:px-6">
-                <div className="flex gap-4">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className={cn(
-                      "h-24 w-20 flex-none rounded-md object-cover",
-                      product.archived && "opacity-45",
-                    )}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <p className="font-display text-lg leading-tight text-loam">
-                          {product.name}
-                        </p>
-                        <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                          {categoryLabel(product.category)} ·{" "}
-                          {formatOccasions(product.occasions) || "No occasion"}
-                        </p>
-                      </div>
-                      <p className="font-display text-base tabular-nums text-loam">
-                        {product.fromPrice ? "from " : ""}
-                        {formatSGD(product.basePrice)}
-                      </p>
-                    </div>
-                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-ink/70">
-                      {product.shortDescription || "No short description yet."}
-                    </p>
-
-                    {product.archived && (
-                      <span className="mt-3 inline-flex rounded-md border border-bronze/30 bg-blush px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-loam">
-                        Archived
-                      </span>
-                    )}
-
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openDraft(product)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={index === 0}
-                        onClick={() => void moveProduct(product, -1)}
-                      >
-                        <ChevronUp className="size-4" />
-                        Up
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={index === products.length - 1}
-                        onClick={() => void moveProduct(product, 1)}
-                      >
-                        <ChevronDown className="size-4" />
-                        Down
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setConfirm({ type: "archive", product })}
-                      >
-                        {product.archived ? (
-                          <RotateCcw className="size-4" />
-                        ) : (
-                          <Archive className="size-4" />
-                        )}
-                        {product.archived ? "Restore" : "Archive"}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setConfirm({ type: "remove", product })}
-                      >
-                        <Trash2 className="size-4" />
-                        Remove
-                      </Button>
-                    </div>
-
-                    {confirm?.product.slug === product.slug && (
-                      <div className="mt-4 rounded-xl border hairline bg-shell p-4 shadow-[var(--shadow-soft)]">
-                        <p className="font-display text-base text-loam">
-                          {confirm.type === "archive"
-                            ? product.archived
-                              ? "Restore this item?"
-                              : "Archive this item?"
-                            : "Permanently remove this item?"}
-                        </p>
-                        <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                          {confirm.type === "archive"
-                            ? "Archiving hides the piece from the public shop without deleting it."
-                            : "This removes the piece from the live menu. Static defaults are kept hidden by a Supabase record."}
-                        </p>
-                        <div className="mt-3 flex gap-2">
-                          <Button
-                            type="button"
-                            size="sm"
-                            onClick={() =>
-                              confirm.type === "archive"
-                                ? void archiveProduct(product)
-                                : void removeProduct(product)
-                            }
-                          >
-                            Confirm
-                          </Button>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setConfirm(null)}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </article>
-            ))
+            <>
+              <ProductList
+                title="Live collection"
+                products={liveProducts}
+                allProducts={products}
+                confirm={confirm}
+                onConfirm={setConfirm}
+                onEdit={openDraft}
+                onMove={moveProduct}
+                onArchive={archiveProduct}
+                onRemove={removeProduct}
+              />
+              <ProductList
+                title="Archived items"
+                description="Hidden from the shop until restored."
+                products={archivedProducts}
+                allProducts={products}
+                archived
+                confirm={confirm}
+                onConfirm={setConfirm}
+                onEdit={openDraft}
+                onMove={moveProduct}
+                onArchive={archiveProduct}
+                onRemove={removeProduct}
+              />
+            </>
           )}
         </div>
       </section>
@@ -527,6 +432,203 @@ export function MenuManagement() {
         onSave={saveDraft}
       />
     </div>
+  );
+}
+
+function ProductList({
+  title,
+  description,
+  products,
+  allProducts,
+  archived = false,
+  confirm,
+  onConfirm,
+  onEdit,
+  onMove,
+  onArchive,
+  onRemove,
+}: {
+  title: string;
+  description?: string;
+  products: Product[];
+  allProducts: Product[];
+  archived?: boolean;
+  confirm: ConfirmAction;
+  onConfirm: (value: ConfirmAction) => void;
+  onEdit: (product: Product) => void;
+  onMove: (product: Product, direction: -1 | 1) => Promise<void>;
+  onArchive: (product: Product) => Promise<void>;
+  onRemove: (product: Product) => Promise<void>;
+}) {
+  return (
+    <div>
+      <div className="bg-cream/35 px-5 py-3 md:px-6">
+        <p className="text-[10px] uppercase tracking-[0.28em] text-clay">{title}</p>
+        {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
+      </div>
+      {products.length === 0 ? (
+        <div className="px-5 py-8 text-sm text-muted-foreground md:px-6">
+          {archived ? "No archived items." : "No live items."}
+        </div>
+      ) : (
+        products.map((product) => (
+          <ProductRow
+            key={product.slug}
+            product={product}
+            index={allProducts.findIndex((candidate) => candidate.slug === product.slug)}
+            total={allProducts.length}
+            archived={archived}
+            confirm={confirm}
+            onConfirm={onConfirm}
+            onEdit={onEdit}
+            onMove={onMove}
+            onArchive={onArchive}
+            onRemove={onRemove}
+          />
+        ))
+      )}
+    </div>
+  );
+}
+
+function ProductRow({
+  product,
+  index,
+  total,
+  archived,
+  confirm,
+  onConfirm,
+  onEdit,
+  onMove,
+  onArchive,
+  onRemove,
+}: {
+  product: Product;
+  index: number;
+  total: number;
+  archived: boolean;
+  confirm: ConfirmAction;
+  onConfirm: (value: ConfirmAction) => void;
+  onEdit: (product: Product) => void;
+  onMove: (product: Product, direction: -1 | 1) => Promise<void>;
+  onArchive: (product: Product) => Promise<void>;
+  onRemove: (product: Product) => Promise<void>;
+}) {
+  return (
+    <article className="border-t hairline px-5 py-5 md:px-6">
+      <div className="flex gap-4">
+        <img
+          src={product.image}
+          alt={product.name}
+          className={cn("h-24 w-20 flex-none rounded-md object-cover", archived && "opacity-45")}
+        />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="font-display text-lg leading-tight text-loam">{product.name}</p>
+              <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                {categoryLabel(product.category)} ·{" "}
+                {formatOccasions(product.occasions) || "No occasion"}
+              </p>
+            </div>
+            <p className="font-display text-base tabular-nums text-loam">
+              {product.fromPrice ? "from " : ""}
+              {formatSGD(product.basePrice)}
+            </p>
+          </div>
+          <p className="mt-2 line-clamp-2 text-sm leading-6 text-ink/70">
+            {product.shortDescription || "No short description yet."}
+          </p>
+
+          {archived && (
+            <span className="mt-3 inline-flex rounded-md border border-bronze/30 bg-blush px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-loam">
+              Archived
+            </span>
+          )}
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={() => onEdit(product)}>
+              Edit
+            </Button>
+            {!archived && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={index === 0}
+                  onClick={() => void onMove(product, -1)}
+                >
+                  <ChevronUp className="size-4" />
+                  Up
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={index === total - 1}
+                  onClick={() => void onMove(product, 1)}
+                >
+                  <ChevronDown className="size-4" />
+                  Down
+                </Button>
+              </>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onConfirm({ type: "archive", product })}
+            >
+              {archived ? <RotateCcw className="size-4" /> : <Archive className="size-4" />}
+              {archived ? "Restore item" : "Archive"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onConfirm({ type: "remove", product })}
+            >
+              <Trash2 className="size-4" />
+              Remove
+            </Button>
+          </div>
+
+          {confirm?.product.slug === product.slug && (
+            <div className="mt-4 rounded-xl border hairline bg-shell p-4 shadow-[var(--shadow-soft)]">
+              <p className="font-display text-base text-loam">
+                {confirm.type === "archive"
+                  ? archived
+                    ? "Restore this item?"
+                    : "Archive this item?"
+                  : "Permanently remove this item?"}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                {confirm.type === "archive"
+                  ? archived
+                    ? "Restoring brings this piece back to the public collection."
+                    : "Archiving hides the piece from the public shop without deleting it."
+                  : "This permanently removes the piece from the menu. Please confirm before continuing."}
+              </p>
+              <div className="mt-3 flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() =>
+                    confirm.type === "archive" ? void onArchive(product) : void onRemove(product)
+                  }
+                >
+                  Confirm
+                </Button>
+                <Button type="button" size="sm" variant="outline" onClick={() => onConfirm(null)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </article>
   );
 }
 
@@ -562,9 +664,10 @@ function ProductEditor({
   if (!draft) {
     return (
       <aside className="rounded-2xl border hairline bg-shell p-8 text-center shadow-[var(--shadow-soft)] lg:sticky lg:top-28 lg:self-start">
-        <p className="font-serif-italic text-xl text-loam">Select an item to edit.</p>
+        <p className="font-serif-italic text-xl text-loam">Choose a piece to update.</p>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Existing products are saved as Supabase overrides; new products are saved as menu rows.
+          Select a bouquet from the list to adjust its photo, pricing, colours and position in the
+          collection. To add something new, choose New item.
         </p>
       </aside>
     );
@@ -703,11 +806,7 @@ function ProductEditor({
 
       <div className="mt-6 space-y-6">
         <Field label="Product name">
-          <Input
-            value={draft.name}
-            onChange={(event) => onChange({ name: event.target.value })}
-            placeholder="The Petit Signature"
-          />
+          <Input value={draft.name} onChange={(event) => onChange({ name: event.target.value })} />
         </Field>
 
         <Field label="Image upload">
@@ -964,7 +1063,7 @@ function TogglePanel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-xl border hairline bg-cream/45 p-4">
+    <section className="rounded-xl border hairline bg-shell p-4">
       <div className="flex items-center justify-between gap-4">
         <p className="text-[10px] uppercase tracking-[0.24em] text-clay">{title}</p>
         <button

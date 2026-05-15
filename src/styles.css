@@ -54,7 +54,7 @@
   /* Brand — drawn from the petit.eblooms wax-seal logo:
      deep forest ground, pale sage script, a whisper of bronze. */
   --cream: oklch(0.965 0.012 95); /* warm bone canvas */
-  --shell: oklch(0.985 0.008 90); /* card surface */
+  --shell: oklch(0.965 0.012 95 / 0.66); /* translucent warm surface */
   --ink: oklch(0.22 0.025 150); /* warm near-black, leans green */
   --forest: oklch(0.32 0.045 152); /* mid forest */
   --forest-deep: oklch(0.235 0.04 152); /* deep forest — primary surface */
@@ -67,9 +67,9 @@
   /* Semantic */
   --background: oklch(0.965 0.012 95);
   --foreground: oklch(0.22 0.025 150);
-  --card: oklch(0.985 0.008 90);
+  --card: oklch(0.965 0.012 95 / 0.66);
   --card-foreground: oklch(0.22 0.025 150);
-  --popover: oklch(0.985 0.008 90);
+  --popover: oklch(0.965 0.012 95 / 0.88);
   --popover-foreground: oklch(0.22 0.025 150);
   --primary: oklch(0.235 0.04 152);
   --primary-foreground: oklch(0.965 0.012 95);
@@ -221,13 +221,14 @@
     transform-origin: 50% 100%;
     border: 1px solid color-mix(in oklab, var(--ink) 12%, transparent);
     background:
-      linear-gradient(145deg, color-mix(in oklab, var(--shell) 92%, white), var(--cream)),
+      linear-gradient(145deg, color-mix(in oklab, var(--cream) 86%, var(--sage)), var(--cream)),
       radial-gradient(
         circle at 20% 0%,
         color-mix(in oklab, var(--sage) 16%, transparent),
         transparent 42%
       );
     box-shadow: var(--shadow-soft);
+    z-index: 15;
   }
   .bouquet-paper-left {
     transform: translateX(-78%) rotate(-15deg) skewY(10deg);
@@ -281,20 +282,172 @@
     border-radius: 999px;
     background: oklch(0.235 0.04 152 / 0.12);
     filter: blur(16px);
+    z-index: 1;
   }
-  .bouquet-stem {
-    width: 4.8rem;
-    height: 17rem;
-    transform-origin: 50% 100%;
-    animation: bouquet-stem-settle 620ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-  }
-  .flower-stalk {
+  .bouquet-wrap {
     position: absolute;
     left: 50%;
-    bottom: 0;
-    width: 0.42rem;
-    height: 13.5rem;
-    transform: translateX(-50%) rotate(1deg);
+    bottom: -0.7rem;
+    width: 15.5rem;
+    height: 15.5rem;
+    transform: translateX(-50%);
+    filter: drop-shadow(0 18px 28px oklch(0.235 0.04 152 / 0.12));
+    z-index: 44;
+  }
+  .bouquet-greenery {
+    position: absolute;
+    left: 50%;
+    top: 47%;
+    z-index: 12;
+    width: 20rem;
+    height: 23rem;
+    transform: translate(-50%, -50%);
+    opacity: 0.88;
+    filter: drop-shadow(0 14px 18px oklch(0.235 0.04 152 / 0.08));
+  }
+  .bouquet-greenery-stem {
+    fill: color-mix(in oklab, var(--loam) 74%, var(--sage));
+    opacity: 0.5;
+  }
+  .bouquet-greenery-leaf {
+    fill: color-mix(in oklab, var(--sage) 78%, var(--cream));
+    stroke: color-mix(in oklab, var(--loam) 30%, transparent);
+    stroke-width: 0.5;
+  }
+  .bouquet-wrap-paper {
+    fill: color-mix(in oklab, var(--wrap-start) 68%, var(--cream));
+    stroke: color-mix(in oklab, var(--ink) 13%, transparent);
+    stroke-width: 1.2;
+  }
+  .bouquet-wrap-fold {
+    fill: color-mix(in oklab, var(--wrap-end) 42%, var(--cream));
+    opacity: 0.68;
+  }
+  .bouquet-wrap-ribbon {
+    fill: var(--wrap-ribbon);
+    filter: drop-shadow(0 7px 10px oklch(0.235 0.04 152 / 0.12));
+  }
+  .bouquet-arrangement {
+    isolation: isolate;
+  }
+  .bouquet-foliage {
+    position: absolute;
+    width: 2.8rem;
+    height: 10.5rem;
+    transform-origin: 50% 90%;
+    border-radius: 999px;
+    opacity: 0.42;
+    z-index: 10;
+  }
+  .bouquet-foliage::before,
+  .bouquet-foliage::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: 0.86rem;
+    height: 2.7rem;
+    transform-origin: 50% 100%;
+    border-radius: 999px 30% 999px 30%;
+    background:
+      linear-gradient(145deg, color-mix(in oklab, var(--sage) 72%, white), var(--sage)), var(--sage);
+    box-shadow:
+      -0.72rem 1.8rem 0 -0.18rem color-mix(in oklab, var(--sage) 82%, var(--clay)),
+      0.7rem 3.65rem 0 -0.16rem color-mix(in oklab, var(--sage) 78%, var(--loam)),
+      -0.58rem 5.45rem 0 -0.2rem color-mix(in oklab, var(--sage) 72%, var(--cream)),
+      0.62rem 7.1rem 0 -0.22rem color-mix(in oklab, var(--sage) 78%, var(--clay));
+    opacity: 0.38;
+  }
+  .bouquet-foliage::before {
+    transform: translateX(-50%) rotate(-10deg);
+  }
+  .bouquet-foliage::after {
+    transform: translateX(-50%) rotate(18deg) scale(0.9);
+    opacity: 0.56;
+  }
+  .bouquet-bloom {
+    width: 8rem;
+    height: 10.5rem;
+    transform-origin: 50% 82%;
+    animation: bouquet-bloom-settle 660ms cubic-bezier(0.2, 0.82, 0.2, 1) both;
+  }
+  .flower-vector {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    filter: drop-shadow(0 10px 14px oklch(0.235 0.04 152 / 0.13));
+  }
+  .flower-vector-mini {
+    width: 1.55rem;
+    height: 1.9rem;
+    transform: translateY(0.14rem) scale(1.32);
+    filter: none;
+  }
+  .flower-vector-stem {
+    fill: color-mix(in oklab, var(--forest) 70%, var(--sage));
+  }
+  .flower-vector-leaf {
+    fill: color-mix(in oklab, var(--sage) 82%, var(--clay));
+    opacity: 0.78;
+  }
+  .flower-vector-leaf-b {
+    fill: color-mix(in oklab, var(--sage) 72%, var(--loam));
+    opacity: 0.64;
+  }
+  .flower-vector-head {
+    transform-origin: 60px 58px;
+  }
+  .bouquet-bloom .flower-vector-head,
+  .bouquet-flight .flower-vector-head {
+    transform: translateY(0.35rem) scale(1.18);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .bouquet-bloom .flower-vector-stem,
+  .bouquet-flight .flower-vector-stem {
+    opacity: 0.42;
+  }
+  .bouquet-bloom .flower-vector-leaf,
+  .bouquet-flight .flower-vector-leaf {
+    opacity: 0.66;
+  }
+  .flower-vector-petal {
+    fill: var(--bloom);
+    stroke: color-mix(in oklab, var(--bloom) 68%, var(--loam));
+    stroke-width: 0.45;
+  }
+  .flower-vector-petal-soft {
+    fill: color-mix(in oklab, var(--bloom-soft) 74%, white);
+  }
+  .flower-vector-core {
+    fill: color-mix(in oklab, var(--bloom) 82%, var(--loam));
+    stroke: color-mix(in oklab, white 40%, transparent);
+    stroke-width: 0.8;
+  }
+  .flower-vector-core-dark {
+    fill: color-mix(in oklab, var(--loam) 88%, black);
+  }
+  .flower-vector-spike {
+    fill: color-mix(in oklab, var(--forest) 70%, var(--sage));
+    opacity: 0.82;
+  }
+  .flower-vector-filler-petal {
+    fill: color-mix(in oklab, var(--bloom-soft) 88%, white);
+    stroke: color-mix(in oklab, var(--bloom) 35%, transparent);
+    stroke-width: 0.4;
+  }
+  .flower-vector-foliage-leaf {
+    fill: color-mix(in oklab, var(--bloom) 76%, var(--bloom-soft));
+    stroke: color-mix(in oklab, var(--forest) 32%, transparent);
+    stroke-width: 0.35;
+  }
+  .bouquet-tucked-stem {
+    position: absolute;
+    left: 50%;
+    bottom: -1.3rem;
+    width: 0.34rem;
+    height: 6.6rem;
+    transform: translateX(-50%) rotate(2deg);
     border-radius: 999px;
     background: linear-gradient(
       180deg,
@@ -302,6 +455,8 @@
       color-mix(in oklab, var(--forest) 74%, var(--sage))
     );
     box-shadow: inset 1px 0 0 oklch(1 0 0 / 0.25);
+    opacity: 0.62;
+    z-index: 0;
   }
   .flower-leaf {
     position: absolute;
@@ -317,12 +472,27 @@
     );
     opacity: 0.74;
   }
+  .bouquet-bloom .flower-leaf,
+  .bouquet-flight .flower-leaf {
+    bottom: 1.4rem;
+    z-index: 1;
+    opacity: 0.7;
+  }
   .flower-leaf-a {
     transform: translateX(-2.2rem) rotate(-28deg);
   }
   .flower-leaf-b {
     bottom: 8.2rem;
     transform: translateX(0.1rem) rotate(34deg) scaleX(-1);
+  }
+  .bouquet-bloom .flower-leaf-a,
+  .bouquet-flight .flower-leaf-a {
+    transform: translateX(-2rem) rotate(-34deg) scale(0.74);
+  }
+  .bouquet-bloom .flower-leaf-b,
+  .bouquet-flight .flower-leaf-b {
+    bottom: 2.55rem;
+    transform: translateX(0.05rem) rotate(34deg) scaleX(-1) scale(0.68);
   }
   .flower-head {
     position: absolute;
@@ -333,6 +503,7 @@
     height: 4.8rem;
     transform: translateX(-50%);
     filter: drop-shadow(0 10px 16px oklch(0.235 0.04 152 / 0.13));
+    z-index: 2;
   }
   .cup-petal {
     position: absolute;
@@ -397,21 +568,21 @@
       0 2px 3px oklch(0.235 0.04 152 / 0.06);
   }
   .rose-petal-outer {
-    width: 1.25rem;
-    height: 2.2rem;
+    width: 1.5rem;
+    height: 2.35rem;
     border-radius: 999px 999px 62% 42%;
   }
   .rose-petal-inner {
-    width: 1rem;
-    height: 1.55rem;
+    width: 1.12rem;
+    height: 1.72rem;
     border-radius: 70% 999px 58% 999px;
   }
   .rose-core {
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1.42rem;
+    height: 1.42rem;
     transform: translate(-50%, -50%) rotate(-18deg);
     border-radius: 48% 62% 44% 66%;
     background:
@@ -700,16 +871,17 @@
   }
   .bouquet-flight {
     left: 50%;
-    bottom: 5.5rem;
-    width: 4.8rem;
-    height: 17rem;
-    transform-origin: 50% 100%;
-    animation: bouquet-flight 980ms cubic-bezier(0.18, 0.72, 0.2, 1) both;
+    top: 42%;
+    width: 8rem;
+    height: 10.5rem;
+    transform-origin: 50% 82%;
+    animation: bouquet-flight 1080ms cubic-bezier(0.18, 0.72, 0.2, 1) both;
   }
-  @keyframes bouquet-stem-settle {
+  @keyframes bouquet-bloom-settle {
     from {
       opacity: 0;
       filter: blur(2px);
+      transform: translate(-50%, -46%) rotate(var(--settle-rotate, 0deg)) scale(0.82);
     }
     to {
       opacity: 1;
@@ -719,33 +891,33 @@
   @keyframes bouquet-flight {
     0% {
       opacity: 0;
-      transform: translate(calc(-21rem + (var(--lane) * 2.8rem)), -11.5rem)
-        rotate(calc(-38deg + (var(--lane) * 7deg))) scale(0.72);
+      transform: translate(calc(-24rem + (var(--lane) * 3rem)), -12rem)
+        rotate(calc(-42deg + (var(--lane) * 8deg))) scale(0.56);
       filter: blur(2px);
     }
     18% {
       opacity: 1;
     }
     56% {
-      transform: translate(calc(-10rem + (var(--lane) * 2.1rem)), -16.5rem)
-        rotate(calc(-18deg + (var(--lane) * 5deg))) scale(0.9);
+      transform: translate(calc(-11rem + (var(--lane) * 2rem)), -17rem)
+        rotate(calc(-18deg + (var(--lane) * 4deg))) scale(0.86);
       filter: blur(0);
     }
     86% {
       opacity: 1;
-      transform: translate(calc(-2.8rem + (var(--lane) * 1.1rem)), -5rem)
-        rotate(calc(-6deg + (var(--lane) * 4deg))) scale(1);
+      transform: translate(calc(-3.2rem + (var(--lane) * 0.82rem)), -5.8rem)
+        rotate(calc(-4deg + (var(--lane) * 3deg))) scale(0.98);
     }
     100% {
       opacity: 0;
-      transform: translate(calc(-2rem + (var(--lane) * 1rem)), -3.2rem)
-        rotate(calc(-4deg + (var(--lane) * 4deg))) scale(1);
+      transform: translate(calc(-2.8rem + (var(--lane) * 0.78rem)), -4.8rem)
+        rotate(calc(-2deg + (var(--lane) * 3deg))) scale(0.98);
       filter: blur(0);
     }
   }
   @media (prefers-reduced-motion: reduce) {
     .reveal,
-    .bouquet-stem,
+    .bouquet-bloom,
     .bouquet-flight {
       animation: none;
       opacity: 1;
