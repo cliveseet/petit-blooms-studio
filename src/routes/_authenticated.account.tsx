@@ -7,6 +7,11 @@ import { formatSGD } from "@/lib/cart";
 import { ChevronLeft } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/account")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    payment: typeof search.payment === "string" ? search.payment : undefined,
+    order: typeof search.order === "string" ? search.order : undefined,
+    status: typeof search.status === "string" ? search.status : undefined,
+  }),
   head: () => ({ meta: [{ title: "Your account — petit blooms" }] }),
   component: AccountPage,
 });
@@ -19,6 +24,8 @@ type Order = {
   scheduled_time: string;
   total: number;
   created_at: string;
+  payment_status: string;
+  hitpay_payment_url: string | null;
   order_items: Array<{
     id: string;
     product_name: string;
@@ -46,8 +53,10 @@ const statusLabel: Record<string, string> = {
 
 function AccountPage() {
   const { user, signOut, isAdmin } = useAuth();
+  const search = Route.useSearch();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const nav = useNavigate();
 
   const handleSignOut = async () => {
@@ -57,13 +66,20 @@ function AccountPage() {
 
   useEffect(() => {
     if (!user) return;
+    setLoadError(null);
     supabase
       .from("orders")
       .select(
-        "id,status,fulfillment,scheduled_date,scheduled_time,total,created_at,order_items(id,product_name,image,quantity,unit_price,personal_message,selection_labels)",
+        "id,status,fulfillment,scheduled_date,scheduled_time,total,created_at,payment_status,hitpay_payment_url,order_items(id,product_name,image,quantity,unit_price,personal_message,selection_labels)",
       )
       .order("created_at", { ascending: false })
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          setLoadError(error.message);
+          setOrders([]);
+          setLoading(false);
+          return;
+        }
         setOrders((data as unknown as Order[]) ?? []);
         setLoading(false);
       });
@@ -76,6 +92,7 @@ function AccountPage() {
           <div>
             <Link
               to="/shop"
+              search={{ category: "all", occasion: "all" }}
               className="mb-6 inline-flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-clay hover:text-loam"
             >
               <ChevronLeft className="size-3.5" />
@@ -109,15 +126,29 @@ function AccountPage() {
           </div>
         </div>
 
+        {search.payment === "hitpay" && (
+          <PaymentReturnNotice
+            order={orders.find((order) => order.id === search.order) ?? null}
+            loading={loading}
+            status={search.status}
+          />
+        )}
+
         <div className="mt-12">
           <h2 className="font-display text-2xl text-loam">Order history</h2>
-          {loading ? (
+          {loadError ? (
+            <div className="mt-8 rounded-2xl border hairline bg-shell p-8">
+              <p className="font-display text-xl text-loam">Orders could not be loaded.</p>
+              <p className="mt-2 text-sm leading-6 text-ink/70">{loadError}</p>
+            </div>
+          ) : loading ? (
             <p className="mt-6 text-sm text-muted-foreground">Loading orders…</p>
           ) : orders.length === 0 ? (
             <div className="mt-8 rounded-2xl border hairline bg-shell p-12 text-center">
               <p className="font-serif-italic text-xl text-loam">No orders just yet.</p>
               <Link
                 to="/shop"
+                search={{ category: "all", occasion: "all" }}
                 className="mt-4 inline-block text-xs uppercase tracking-[0.22em] text-clay underline"
               >
                 Browse the shop
@@ -153,6 +184,9 @@ function AccountPage() {
                         className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.22em] ${statusTone[o.status] ?? "bg-muted"}`}
                       >
                         {statusLabel[o.status] ?? o.status}
+                      </span>
+                      <span className="rounded-full border hairline bg-shell px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-clay">
+                        Payment {o.payment_status}
                       </span>
                       <p className="font-display text-xl text-loam tabular-nums">
                         {formatSGD(Number(o.total))}
@@ -191,6 +225,59 @@ function AccountPage() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function PaymentReturnNotice({
+  order,
+  loading,
+  status,
+}: {
+  order: Order | null;
+  loading: boolean;
+  status?: string;
+}) {
+  if (loading) {
+    return (
+      <div className="mt-8 rounded-2xl border hairline bg-shell p-6 text-sm text-muted-foreground">
+        Checking your payment status…
+      </div>
+    );
+  }
+
+  const returnedStatus = status?.toLowerCase();
+  const failed = ["failed", "cancelled", "canceled", "expired"].includes(returnedStatus ?? "");
+  const paid = order?.payment_status === "paid" || returnedStatus === "completed";
+
+  if (paid) {
+    return (
+      <div className="mt-8 rounded-2xl border border-sage/45 bg-sage/20 p-6 text-sm leading-6 text-loam">
+        Payment received. Your order is now in the studio order book.
+      </div>
+    );
+  }
+
+  if (failed) {
+    return (
+      <div className="mt-8 rounded-2xl border border-destructive/25 bg-destructive/5 p-6">
+        <p className="font-display text-xl text-loam">Payment was not completed.</p>
+        <p className="mt-2 text-sm leading-6 text-ink/70">
+          Your order has been saved, but it has not been marked as paid. You can try payment again.
+        </p>
+        {order?.hitpay_payment_url && (
+          <Button asChild className="mt-5">
+            <a href={order.hitpay_payment_url}>Try payment again</a>
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-8 rounded-2xl border hairline bg-shell p-6 text-sm leading-6 text-ink/70">
+      Payment confirmation is still pending. If you have just paid, this page will update after
+      HitPay confirms the payment.
     </div>
   );
 }

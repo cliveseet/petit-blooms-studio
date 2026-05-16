@@ -43,7 +43,6 @@ export function Header() {
               to={l.to}
               className="whitespace-nowrap text-[10px] uppercase tracking-[0.2em] text-ink/65 transition-colors hover:text-loam lg:text-[11px] lg:tracking-[0.24em]"
               activeProps={{ className: "text-loam" }}
-              activeOptions={{ exact: l.to === "/" }}
             >
               {l.label}
             </Link>

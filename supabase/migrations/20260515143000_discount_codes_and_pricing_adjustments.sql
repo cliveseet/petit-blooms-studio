@@ -14,10 +14,7 @@ AS $$
       WHERE user_id = auth.uid()
         AND role = 'admin'::public.app_role
     )
-    OR lower(COALESCE(auth.jwt()->>'email', '')) IN (
-      'denise@petitblooms.com',
-      'admin@test.com'
-    )
+    OR lower(COALESCE(auth.jwt()->>'email', '')) = 'denise@petitblooms.com'
 $$;
 
 REVOKE EXECUTE ON FUNCTION public.is_admin_user() FROM PUBLIC, anon;
@@ -136,9 +133,3 @@ CREATE INDEX IF NOT EXISTS idx_discount_codes_code ON public.discount_codes(code
 CREATE INDEX IF NOT EXISTS idx_discount_codes_active ON public.discount_codes(active, expires_at);
 CREATE INDEX IF NOT EXISTS idx_pricing_adjustments_active
   ON public.pricing_adjustments(active, starts_on, ends_on);
-
-INSERT INTO public.discount_codes (code, label, percent_off, scope, product_slugs, active)
-VALUES
-  ('BLOOM10', 'Welcome offer', 10, 'all', '{}'::TEXT[], true),
-  ('PETIT5', 'Petit thank you', 5, 'all', '{}'::TEXT[], true)
-ON CONFLICT (code) DO NOTHING;

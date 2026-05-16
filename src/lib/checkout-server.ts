@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { Buffer } from "node:buffer";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -58,6 +59,41 @@ type HitPayResponse = {
   status?: string;
   message?: string;
 };
+
+type RateLimitBucket = {
+  count: number;
+  resetAt: number;
+};
+
+const rateBuckets = new Map<string, RateLimitBucket>();
+
+function clientKey(prefix: string) {
+  const request = getRequest();
+  const forwarded = request?.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const ip =
+    request?.headers.get("cf-connecting-ip") ||
+    request?.headers.get("x-real-ip") ||
+    forwarded ||
+    "anonymous";
+  return `${prefix}:${ip}`;
+}
+
+function assertRateLimit(prefix: string, limit: number, windowMs: number) {
+  const key = clientKey(prefix);
+  const now = Date.now();
+  const current = rateBuckets.get(key);
+
+  if (!current || current.resetAt <= now) {
+    rateBuckets.set(key, { count: 1, resetAt: now + windowMs });
+    return;
+  }
+
+  if (current.count >= limit) {
+    throw new Error("Too many requests. Please wait a moment and try again.");
+  }
+
+  current.count += 1;
+}
 
 function feeFromDistance(distanceKm: number) {
   if (distanceKm < 5) return 20;
@@ -231,6 +267,8 @@ function paymentMethods() {
 export const calculateDeliveryQuote = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => deliveryInput.parse(input))
   .handler(async ({ data }) => {
+    assertRateLimit("delivery-quote", 20, 60_000);
+
     try {
       const distance = await calculateOneMapDistance(data.postal);
       const distanceKm = Number(distance.distanceKm.toFixed(2));
@@ -241,7 +279,7 @@ export const calculateDeliveryQuote = createServerFn({ method: "POST" })
         distanceKm,
         source: "onemap" as const,
         checkedAt: new Date().toISOString(),
-        message: `Estimated driving distance ${distance.distanceKm.toFixed(1)} km.`,
+        message: `Driving distance: ${distance.distanceKm.toFixed(1)} km.`,
       };
     } catch (error) {
       const hasToken =
@@ -269,6 +307,8 @@ export const createHitPayPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => paymentInput.parse(input))
   .handler(async ({ data, context }) => {
+    assertRateLimit("hitpay-create", 8, 60_000);
+
     const apiKey = process.env.HITPAY_API_KEY;
     if (!apiKey) {
       throw new Error("HitPay is not configured. Add HITPAY_API_KEY to the server environment.");
@@ -277,7 +317,9 @@ export const createHitPayPayment = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: order, error } = await supabaseAdmin
       .from("orders")
-      .select("id,user_id,total,contact_email,contact_name,contact_phone,payment_status")
+      .select(
+        "id,user_id,total,contact_email,contact_name,contact_phone,payment_status,hitpay_payment_url,hitpay_payment_request_id",
+      )
       .eq("id", data.orderId)
       .single();
 
@@ -287,6 +329,18 @@ export const createHitPayPayment = createServerFn({ method: "POST" })
 
     if (order.user_id !== context.userId) {
       throw new Error("This order does not belong to the signed-in customer.");
+    }
+
+    if (order.payment_status === "paid") {
+      throw new Error("This order has already been paid.");
+    }
+
+    if (order.payment_status === "pending" && order.hitpay_payment_url) {
+      return {
+        paymentUrl: order.hitpay_payment_url,
+        requestId: order.hitpay_payment_request_id,
+        status: "pending",
+      };
     }
 
     const redirectUrl = new URL("/account", data.origin);

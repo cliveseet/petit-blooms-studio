@@ -46,6 +46,7 @@ import {
 } from "@/lib/products";
 import { cn } from "@/lib/utils";
 import { formatSGD } from "@/lib/cart";
+import { sanitizeMultiline, sanitizeText } from "@/lib/sanitize";
 
 type Draft = Product & { isNew?: boolean };
 type ConfirmAction = { type: "archive" | "remove"; product: Product } | null;
@@ -114,6 +115,25 @@ function uniqueSlug(name: string, products: Product[], currentSlug?: string) {
 
 function gradientValue(gradient: GradientDraft) {
   return `linear-gradient(135deg,${gradient.a} 0%,${gradient.b} 50%,${gradient.c} 100%)`;
+}
+
+function sanitizeChoice(choice: OptionChoice): OptionChoice {
+  const label = sanitizeText(choice.label, 80);
+  return {
+    ...choice,
+    value: slugify(label || choice.value) || choice.value,
+    label,
+    ...(choice.swatch ? { swatch: sanitizeText(choice.swatch, 300) } : {}),
+  };
+}
+
+function sanitizeOptionGroup(group: OptionGroup): OptionGroup {
+  return {
+    ...group,
+    id: sanitizeText(group.id, 60),
+    label: sanitizeText(group.label, 80),
+    choices: group.choices.map(sanitizeChoice).filter((choice) => choice.label),
+  };
 }
 
 function swatchStyle(value?: string) {
@@ -198,8 +218,9 @@ export function MenuManagement() {
       return;
     }
 
-    const slug = draft.slug || uniqueSlug(draft.name, products, draft.slug);
-    const options = editorOptions(draft.options);
+    const name = sanitizeText(draft.name, 140);
+    const slug = draft.slug || uniqueSlug(name, products, draft.slug);
+    const options = editorOptions(draft.options).map(sanitizeOptionGroup);
     const tierGroup = options.find(isSizeOrCountGroup);
     const colourGroup = options.find(isColourGroup);
     const tierPrices = tierGroup?.choices
@@ -224,19 +245,21 @@ export function MenuManagement() {
 
     setSaving(true);
     try {
-      const image = imageFile ? await uploadMenuImage(imageFile, slug) : draft.image.trim();
+      const image = imageFile
+        ? await uploadMenuImage(imageFile, slug)
+        : sanitizeText(draft.image, 900);
       const product: Product = {
         ...draft,
         slug,
-        name: draft.name.trim(),
+        name,
         basePrice,
         fromPrice: Boolean(tierGroup),
         image,
-        shortDescription: draft.shortDescription.trim(),
-        description: draft.description.trim(),
+        shortDescription: sanitizeMultiline(draft.shortDescription, 280),
+        description: sanitizeMultiline(draft.description, 1200),
         options,
         defaultPersonalisationPrompt:
-          draft.defaultPersonalisationPrompt?.trim() || defaultPersonalisationPrompt,
+          sanitizeText(draft.defaultPersonalisationPrompt, 160) || defaultPersonalisationPrompt,
         source: draft.source === "local" ? "local" : "database",
       };
 
@@ -970,7 +993,7 @@ function ProductEditor({
             <Input
               value={gradient.label}
               onChange={(event) => onGradientChange({ ...gradient, label: event.target.value })}
-              placeholder="Soft garden mix"
+              placeholder="Palette name"
             />
             <div className="flex items-center gap-3">
               {(["a", "b", "c"] as const).map((key) => (
@@ -1031,7 +1054,7 @@ function ProductEditor({
           <Input
             value={draft.defaultPersonalisationPrompt}
             onChange={(event) => onChange({ defaultPersonalisationPrompt: event.target.value })}
-            placeholder={defaultPersonalisationPrompt}
+            placeholder="Message prompt shown to customers"
           />
         </Field>
 

@@ -59,7 +59,7 @@ function LoginPage() {
       toast.success("Check your inbox to confirm your email.");
     } else {
       toast.success("Welcome back.");
-      nav({ to: "/account" });
+      nav({ to: "/account", search: { payment: undefined, order: undefined, status: undefined } });
     }
   };
 

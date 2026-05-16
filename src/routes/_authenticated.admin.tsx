@@ -50,6 +50,9 @@ type Order = {
   scheduled_date: string;
   scheduled_time: string;
   status: Status;
+  payment_status: string;
+  recipient_name: string | null;
+  recipient_phone: string | null;
   created_at: string;
   order_items: OrderItem[];
 };
@@ -134,7 +137,7 @@ function AdminPage() {
     const { data, error } = await supabase
       .from("orders")
       .select(
-        "id,contact_name,contact_email,fulfillment,scheduled_date,scheduled_time,status,created_at,order_items(id,product_name,quantity,selection_labels)",
+        "id,contact_name,contact_email,fulfillment,scheduled_date,scheduled_time,status,payment_status,recipient_name,recipient_phone,created_at,order_items(id,product_name,quantity,selection_labels)",
       )
       .order("created_at", { ascending: false });
 
@@ -183,7 +186,14 @@ function AdminPage() {
     );
   }
 
-  if (!isAdmin) return <Navigate to="/account" />;
+  if (!isAdmin) {
+    return (
+      <Navigate
+        to="/account"
+        search={{ payment: undefined, order: undefined, status: undefined }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-[80vh] bg-cream">
@@ -285,7 +295,7 @@ function AdminPage() {
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.28em] text-clay">All orders</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {orders.length} {orders.length === 1 ? "order" : "orders"} in Supabase
+                    {orders.length} {orders.length === 1 ? "order" : "orders"} recorded
                   </p>
                 </div>
                 <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
@@ -342,6 +352,12 @@ function AdminPage() {
                             <p className="mt-1 text-xs text-muted-foreground">
                               {order.contact_email}
                             </p>
+                            {order.recipient_name && (
+                              <p className="mt-2 text-xs text-ink/70">
+                                For {order.recipient_name}
+                                {order.recipient_phone ? ` · ${order.recipient_phone}` : ""}
+                              </p>
+                            )}
                           </TableCell>
                           <TableCell className="min-w-56 px-5 py-5 align-top text-sm leading-6 text-ink/85">
                             {productText(order)}
@@ -377,6 +393,9 @@ function AdminPage() {
                               )}
                               {statusLabel[order.status]}
                             </button>
+                            <p className="mt-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                              Payment {order.payment_status}
+                            </p>
                           </TableCell>
                         </TableRow>
                       ))}

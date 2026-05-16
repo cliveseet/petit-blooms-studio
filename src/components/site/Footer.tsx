@@ -60,7 +60,11 @@ export function Footer() {
         <div className="container-page flex flex-col gap-3 py-6 text-xs text-cream/60 md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} petit blooms. Made with love in Singapore.</p>
           <nav className="flex gap-5">
-            <Link to="/shop" className="hover:text-cream">
+            <Link
+              to="/shop"
+              search={{ category: "all", occasion: "all" }}
+              className="hover:text-cream"
+            >
               Our Collection
             </Link>
             <Link to="/bespoke" className="hover:text-cream">

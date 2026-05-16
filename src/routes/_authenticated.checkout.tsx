@@ -15,6 +15,7 @@ import { CalendarIcon, MapPin, Truck, Check, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { sanitizeCode, sanitizeEmail, sanitizeMultiline, sanitizeText } from "@/lib/sanitize";
 
 export const Route = createFileRoute("/_authenticated/checkout")({
   head: () => ({ meta: [{ title: "Checkout — petit blooms" }] }),
@@ -22,6 +23,13 @@ export const Route = createFileRoute("/_authenticated/checkout")({
 });
 
 const TIME_SLOTS = ["No Preference", "08:00 – 12:00", "12:00 – 18:00", "18:00 – 22:00"];
+
+function sanitizeRecord(record: Record<string, string>) {
+  return Object.fromEntries(
+    Object.entries(record).map(([key, value]) => [sanitizeText(key, 80), sanitizeText(value, 180)]),
+  );
+}
+
 function CheckoutPage() {
   const { user } = useAuth();
   const { lines, subtotal, deliveryQuote, setDeliveryQuote, clear } = useCart();
@@ -48,6 +56,8 @@ function CheckoutPage() {
   const [busy, setBusy] = useState(false);
   const [checkingFee, setCheckingFee] = useState(false);
   const [applyingVoucher, setApplyingVoucher] = useState(false);
+  const [postalTouched, setPostalTouched] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const activeDeliveryQuote = deliveryQuote?.postal === postal ? deliveryQuote : null;
   const deliveryFee = useMemo(() => {
@@ -60,10 +70,7 @@ function CheckoutPage() {
   const total = Math.max(0, subtotal + deliveryFee - discount);
 
   const applyVoucher = async () => {
-    const code = voucher
-      .trim()
-      .toUpperCase()
-      .replace(/[^A-Z0-9_-]/g, "");
+    const code = sanitizeCode(voucher);
     if (!code) return;
 
     setApplyingVoucher(true);
@@ -106,14 +113,22 @@ function CheckoutPage() {
     lines.length > 0 &&
     !!date &&
     !!slot &&
-    !!name &&
-    !!phone &&
-    !!recipientName &&
-    !!recipientPhone &&
+    !!name.trim() &&
+    !!phone.trim() &&
+    !!recipientName.trim() &&
+    !!recipientPhone.trim() &&
     (fulfillment === "pickup" ||
-      (address.length > 5 && postal.length === 6 && (subtotal >= 180 || !!activeDeliveryQuote)));
+      (address.trim().length > 5 &&
+        postal.length === 6 &&
+        (subtotal >= 180 || !!activeDeliveryQuote)));
+
+  const postalError =
+    postalTouched && fulfillment === "delivery" && postal.length !== 6
+      ? "Enter a valid 6-digit Singapore postal code."
+      : null;
 
   const checkDeliveryFee = async () => {
+    setPostalTouched(true);
     if (postal.length !== 6) {
       toast.error("Enter a 6-digit Singapore postal code.");
       return;
@@ -132,7 +147,16 @@ function CheckoutPage() {
 
   const placeOrder = async () => {
     if (!valid || !user) return;
+    setSubmitError(null);
     setBusy(true);
+    const customerName = sanitizeText(name, 120);
+    const customerPhone = sanitizeText(phone, 40);
+    const orderAddress = sanitizeMultiline(address, 600);
+    const orderNotes = sanitizeMultiline(notes, 600);
+    const orderRecipientName = sanitizeText(recipientName, 120);
+    const orderRecipientPhone = sanitizeText(recipientPhone, 40);
+    const orderInstructions = sanitizeMultiline(deliveryInstructions, 600);
+
     const { data: order, error } = await supabase
       .from("orders")
       .insert({
@@ -140,7 +164,7 @@ function CheckoutPage() {
         fulfillment,
         scheduled_date: format(date!, "yyyy-MM-dd"),
         scheduled_time: slot,
-        delivery_address: fulfillment === "delivery" ? address : null,
+        delivery_address: fulfillment === "delivery" ? orderAddress : null,
         delivery_postal: fulfillment === "delivery" ? postal : null,
         delivery_fee: deliveryFee,
         delivery_distance_km:
@@ -153,20 +177,22 @@ function CheckoutPage() {
         discount,
         subtotal,
         total,
-        contact_name: name,
-        contact_phone: phone,
-        contact_email: user.email!,
-        recipient_name: recipientName,
-        recipient_phone: recipientPhone,
-        delivery_instructions: deliveryInstructions.trim() || null,
-        notes: notes || null,
+        contact_name: customerName,
+        contact_phone: customerPhone,
+        contact_email: sanitizeEmail(user.email),
+        recipient_name: orderRecipientName,
+        recipient_phone: orderRecipientPhone,
+        delivery_instructions: orderInstructions || null,
+        notes: orderNotes || null,
         payment_status: "unpaid",
       })
       .select("id")
       .single();
 
     if (error || !order) {
-      toast.error(error?.message ?? "Could not create order");
+      const message = error?.message ?? "Could not create order.";
+      setSubmitError(message);
+      toast.error(message);
       setBusy(false);
       return;
     }
@@ -174,17 +200,19 @@ function CheckoutPage() {
     const { error: itemErr } = await supabase.from("order_items").insert(
       lines.map((l) => ({
         order_id: order.id,
-        product_slug: l.slug,
-        product_name: l.name,
+        product_slug: sanitizeText(l.slug, 120),
+        product_name: sanitizeText(l.name, 180),
         image: l.image,
         unit_price: l.unitPrice,
         quantity: l.quantity,
-        selections: l.selections,
-        selection_labels: l.selectionLabels,
-        personal_message: l.personalMessage?.trim() || "NIL",
+        selections: sanitizeRecord(l.selections),
+        selection_labels: sanitizeRecord(l.selectionLabels),
+        personal_message: sanitizeMultiline(l.personalMessage, 240) || "NIL",
       })),
     );
     if (itemErr) {
+      await supabase.from("orders").delete().eq("id", order.id);
+      setSubmitError(itemErr.message);
       toast.error(itemErr.message);
       setBusy(false);
       return;
@@ -195,7 +223,9 @@ function CheckoutPage() {
     } = await supabase.auth.getSession();
 
     if (!session?.access_token) {
-      toast.error("Your sign-in session expired. Please sign in again before payment.");
+      const message = "Your sign-in session expired. Please sign in again before payment.";
+      setSubmitError(message);
+      toast.error(message);
       setBusy(false);
       return;
     }
@@ -209,11 +239,12 @@ function CheckoutPage() {
       toast.success("Order saved. Opening HitPay checkout.");
       window.location.assign(payment.paymentUrl);
     } catch (paymentError) {
-      toast.error(
+      const message =
         paymentError instanceof Error
           ? paymentError.message
-          : "Order saved, but HitPay checkout could not start.",
-      );
+          : "Order saved, but HitPay checkout could not start.";
+      setSubmitError(message);
+      toast.error(message);
       setBusy(false);
     }
   };
@@ -224,6 +255,7 @@ function CheckoutPage() {
         <p className="font-serif-italic text-xl text-loam">Your bag is empty.</p>
         <Link
           to="/shop"
+          search={{ category: "all", occasion: "all" }}
           className="mt-4 inline-block text-xs uppercase tracking-[0.22em] text-clay underline"
         >
           Browse the shop
@@ -286,10 +318,19 @@ function CheckoutPage() {
                       </Label>
                       <Input
                         value={postal}
-                        onChange={(e) => setPostal(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                        onChange={(e) => {
+                          setPostal(e.target.value.replace(/\D/g, "").slice(0, 6));
+                          setPostalTouched(true);
+                        }}
                         placeholder="Singapore postal code"
                         className="mt-2"
+                        aria-invalid={postalError ? true : undefined}
                       />
+                      {postalError && (
+                        <p className="mt-1.5 text-[11px] leading-5 text-destructive">
+                          {postalError}
+                        </p>
+                      )}
                     </div>
                     <Button
                       type="button"
@@ -407,7 +448,7 @@ function CheckoutPage() {
                   <Input
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+65 9123 4567"
+                    placeholder="Phone number"
                     className="mt-2"
                   />
                 </div>
@@ -420,7 +461,7 @@ function CheckoutPage() {
                     onChange={(e) => setNotes(e.target.value)}
                     className="mt-2"
                     rows={2}
-                    placeholder="Allergies, special requests, timing notes..."
+                    placeholder="Any helpful context for the order"
                   />
                 </div>
               </div>
@@ -451,7 +492,7 @@ function CheckoutPage() {
                   <Input
                     value={recipientPhone}
                     onChange={(e) => setRecipientPhone(e.target.value)}
-                    placeholder="+65 9123 4567"
+                    placeholder="Recipient phone number"
                     className="mt-2"
                   />
                 </div>
@@ -464,7 +505,7 @@ function CheckoutPage() {
                     onChange={(e) => setDeliveryInstructions(e.target.value)}
                     className="mt-2"
                     rows={2}
-                    placeholder="Concierge, gate code, preferred handover note"
+                    placeholder="Access notes or handover preference"
                   />
                 </div>
               </div>
@@ -572,6 +613,11 @@ function CheckoutPage() {
               >
                 {busy ? "Opening HitPay..." : "Proceed to payment"}
               </Button>
+              {submitError && (
+                <p className="mt-3 rounded-md border border-destructive/25 bg-destructive/5 px-3 py-2 text-xs leading-5 text-destructive">
+                  {submitError}
+                </p>
+              )}
               <p className="mt-3 text-center text-[11px] text-muted-foreground">
                 Secure payment is handled by HitPay after your order is saved.
               </p>

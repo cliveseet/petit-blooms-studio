@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
+import { sanitizeEmail, sanitizeText } from "@/lib/sanitize";
 
 type AuthResult = {
   error: string | null;
@@ -20,6 +21,17 @@ type AuthCtx = {
 };
 
 const Ctx = createContext<AuthCtx | null>(null);
+const AUTH_CHECK_TIMEOUT_MS = 5_000;
+
+function withTimeout<T>(promise: PromiseLike<T>, ms: number, fallback: unknown) {
+  return new Promise<T>((resolve) => {
+    const timer = window.setTimeout(() => resolve(fallback as T), ms);
+    Promise.resolve(promise)
+      .then((value) => resolve(value))
+      .catch(() => resolve(fallback as T))
+      .finally(() => window.clearTimeout(timer));
+  });
+}
 
 function getAuthRedirectTo(path: string, next?: string) {
   if (typeof window === "undefined") return undefined;
@@ -59,15 +71,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", s.user.id);
+      const { data, error } = await withTimeout(
+        supabase.from("user_roles").select("role").eq("user_id", s.user.id),
+        AUTH_CHECK_TIMEOUT_MS,
+        { data: null, error: new Error("Role check timed out.") },
+      );
 
       if (!active || run !== syncRun) return;
-      if (error) {
-        console.error("[Auth] Could not load user role", error);
-      }
+      if (error) setIsAdmin(false);
 
       const hasAdminRole = !!data?.some((r) => r.role === "admin");
       setIsAdmin(hasAdminRole);
@@ -80,9 +91,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setTimeout(() => void syncSession(s), 0);
     });
 
-    supabase.auth.getSession().then(({ data: { session: s }, error }) => {
+    withTimeout(supabase.auth.getSession(), AUTH_CHECK_TIMEOUT_MS, {
+      data: { session: null },
+      error: null,
+    }).then(({ data: { session: s }, error }) => {
       if (error) {
-        console.error("[Auth] Could not load current session", error);
         setLoading(false);
         return;
       }
@@ -97,7 +110,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn: AuthCtx["signIn"] = async (email, password) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: sanitizeEmail(email),
+        password,
+      });
       return { error: error?.message ?? null, session: data.session };
     } catch (error) {
       return { error: authMessage(error), session: null };
@@ -106,11 +122,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp: AuthCtx["signUp"] = async (email, password, fullName) => {
     try {
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: sanitizeEmail(email),
         password,
         options: {
           emailRedirectTo: getAuthRedirectTo("/auth/confirm", "/account"),
-          data: { full_name: fullName },
+          data: { full_name: sanitizeText(fullName, 120) },
         },
       });
       return { error: error?.message ?? null, session: data.session };
@@ -120,7 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
   const resetPasswordForEmail: AuthCtx["resetPasswordForEmail"] = async (email) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(sanitizeEmail(email), {
         redirectTo: getAuthRedirectTo("/auth/reset-password"),
       });
       return { error: error?.message ?? null };

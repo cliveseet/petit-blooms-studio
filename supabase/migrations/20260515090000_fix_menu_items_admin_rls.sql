@@ -15,10 +15,7 @@ AS $$
       WHERE user_id = auth.uid()
         AND role = 'admin'::public.app_role
     )
-    OR lower(COALESCE(auth.jwt()->>'email', '')) IN (
-      'denise@petitblooms.com',
-      'admin@test.com'
-    )
+    OR lower(COALESCE(auth.jwt()->>'email', '')) = 'denise@petitblooms.com'
 $$;
 
 REVOKE EXECUTE ON FUNCTION public.is_admin_user() FROM PUBLIC, anon;
@@ -27,7 +24,7 @@ GRANT EXECUTE ON FUNCTION public.is_admin_user() TO authenticated;
 INSERT INTO public.user_roles (user_id, role)
 SELECT id, 'admin'::public.app_role
 FROM auth.users
-WHERE lower(email) IN ('denise@petitblooms.com', 'admin@test.com')
+WHERE lower(email) = 'denise@petitblooms.com'
 ON CONFLICT (user_id, role) DO NOTHING;
 
 ALTER TABLE public.menu_items ENABLE ROW LEVEL SECURITY;

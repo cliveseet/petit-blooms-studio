@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Minus, Plus, ChevronRight, Check } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { sanitizeMultiline } from "@/lib/sanitize";
 
 export const Route = createFileRoute("/shop/$slug")({
   loader: ({ params }) => {
@@ -39,7 +40,11 @@ export const Route = createFileRoute("/shop/$slug")({
   notFoundComponent: () => (
     <div className="container-page py-24 text-center">
       <h1 className="font-display text-3xl text-loam">Bouquet not found</h1>
-      <Link to="/shop" className="mt-4 inline-block text-sm underline">
+      <Link
+        to="/shop"
+        search={{ category: "all", occasion: "all" }}
+        className="mt-4 inline-block text-sm underline"
+      >
         Back to shop
       </Link>
     </div>
@@ -69,7 +74,11 @@ function PdpPage() {
     return (
       <div className="container-page py-24 text-center">
         <h1 className="font-display text-3xl text-loam">Bouquet not found</h1>
-        <Link to="/shop" className="mt-4 inline-block text-sm underline">
+        <Link
+          to="/shop"
+          search={{ category: "all", occasion: "all" }}
+          className="mt-4 inline-block text-sm underline"
+        >
           Back to shop
         </Link>
       </div>
@@ -120,7 +129,7 @@ function Pdp({ product }: { product: Product }) {
       quantity: qty,
       selections,
       selectionLabels: labels,
-      personalMessage: personalMessage.trim() || "NIL",
+      personalMessage: sanitizeMultiline(personalMessage, 240) || "NIL",
     });
     toast.success(`${product.name} added to your bag.`);
   };
@@ -132,7 +141,11 @@ function Pdp({ product }: { product: Product }) {
       <div className="container-page py-10 md:py-14">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Link to="/shop" className="hover:text-loam">
+          <Link
+            to="/shop"
+            search={{ category: "all", occasion: "all" }}
+            className="hover:text-loam"
+          >
             Shop
           </Link>
           <ChevronRight className="size-3" />

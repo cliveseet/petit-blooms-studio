@@ -9,6 +9,7 @@ import { useCart, formatSGD } from "@/lib/cart";
 import { useMenuProducts } from "@/hooks/use-menu-products";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { sanitizeMultiline } from "@/lib/sanitize";
 
 export const Route = createFileRoute("/bespoke")({
   head: () => ({
@@ -470,7 +471,7 @@ function BespokePage() {
         size: `Size: ${size.label}`,
         palette: `Palette: ${palette.label}`,
       },
-      personalMessage: personalMessage.trim() || "NIL",
+      personalMessage: sanitizeMultiline(personalMessage, 240) || "NIL",
     });
     toast.success("Bespoke Bouquet added to your bag.");
   };
@@ -788,12 +789,14 @@ function BouquetPreview({
 function BouquetGreenery() {
   return (
     <svg className="bouquet-greenery" viewBox="0 0 320 340" aria-hidden="true">
-      {[
-        ["M154 255 C123 189 91 132 50 68 C93 111 128 171 166 255 Z", -14],
-        ["M166 255 C199 187 233 130 273 72 C232 114 196 174 154 255 Z", 14],
-        ["M158 252 C136 179 132 121 139 70 C157 133 165 190 168 252 Z", -3],
-        ["M164 252 C188 184 200 127 197 72 C174 132 160 190 154 252 Z", 7],
-      ].map(([path, rotate], index) => (
+      {(
+        [
+          ["M154 255 C123 189 91 132 50 68 C93 111 128 171 166 255 Z", -14],
+          ["M166 255 C199 187 233 130 273 72 C232 114 196 174 154 255 Z", 14],
+          ["M158 252 C136 179 132 121 139 70 C157 133 165 190 168 252 Z", -3],
+          ["M164 252 C188 184 200 127 197 72 C174 132 160 190 154 252 Z", 7],
+        ] as Array<[string, number]>
+      ).map(([path, rotate], index) => (
         <path
           key={`stem-${index}`}
           className="bouquet-greenery-stem"

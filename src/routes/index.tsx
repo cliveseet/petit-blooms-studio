@@ -58,6 +58,7 @@ function HomePage() {
             <div className="mt-10 flex flex-wrap items-center gap-5">
               <Link
                 to="/shop"
+                search={{ category: "all", occasion: "all" }}
                 className="inline-flex items-center gap-2 rounded-md bg-loam px-6 py-3.5 text-xs uppercase tracking-[0.22em] text-cream transition-all hover:-translate-y-0.5 hover:bg-ink"
               >
                 Shop the collection <ArrowUpRight className="size-4" />
@@ -183,6 +184,7 @@ function HomePage() {
             </div>
             <Link
               to="/shop"
+              search={{ category: "all", occasion: "all" }}
               className="hidden items-center gap-2 text-[11px] uppercase tracking-[0.28em] text-cream/75 underline underline-offset-[6px] decoration-clay/70 hover:text-cream md:inline-flex"
             >
               See the shop <ArrowUpRight className="size-3.5" />

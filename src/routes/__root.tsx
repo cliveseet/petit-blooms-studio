@@ -15,6 +15,7 @@ import { CartDrawer } from "@/components/site/CartDrawer";
 import { CartProvider } from "@/lib/cart";
 import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "@/components/ui/sonner";
+import { AppErrorBoundary } from "@/components/site/AppErrorBoundary";
 
 function NotFoundComponent() {
   return (
@@ -39,7 +40,7 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
+  void error;
   const router = useRouter();
   return (
     <div className="flex min-h-[70vh] items-center justify-center bg-background px-4">
@@ -120,7 +121,9 @@ function RootComponent() {
           <div className="flex min-h-screen flex-col">
             <Header />
             <main className="flex-1">
-              <Outlet />
+              <AppErrorBoundary>
+                <Outlet />
+              </AppErrorBoundary>
             </main>
             <Footer />
           </div>

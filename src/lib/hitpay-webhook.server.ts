@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import type { Database } from "@/integrations/supabase/types";
 
 type HitPayWebhookPayload = Record<string, unknown>;
 
@@ -55,6 +56,25 @@ function textField(payload: HitPayWebhookPayload, keys: string[]) {
   return null;
 }
 
+function numericField(payload: HitPayWebhookPayload, keys: string[]) {
+  for (const key of keys) {
+    const value = payload[key];
+    const numberValue =
+      typeof value === "number" ? value : typeof value === "string" ? Number(value) : NaN;
+    if (Number.isFinite(numberValue)) return numberValue;
+  }
+  const nested = payload.payment_request;
+  if (nested && typeof nested === "object" && !Array.isArray(nested)) {
+    for (const key of keys) {
+      const value = (nested as HitPayWebhookPayload)[key];
+      const numberValue =
+        typeof value === "number" ? value : typeof value === "string" ? Number(value) : NaN;
+      if (Number.isFinite(numberValue)) return numberValue;
+    }
+  }
+  return null;
+}
+
 function paymentStatus(status: string | null) {
   const value = status?.toLowerCase() ?? "";
   if (["completed", "succeeded", "paid", "successful"].includes(value)) return "paid";
@@ -99,15 +119,35 @@ export async function handleHitPayWebhook(request: Request) {
   const requestId = textField(payload, ["id", "payment_request_id", "request_id"]);
   const nextStatus = paymentStatus(status);
 
-  const { error } = await supabaseAdmin
+  const { data: order, error: loadError } = await supabaseAdmin
     .from("orders")
-    .update({
-      payment_provider: "hitpay",
-      payment_status: nextStatus,
-      hitpay_payment_request_id: requestId,
-      paid_at: nextStatus === "paid" ? new Date().toISOString() : null,
-    })
-    .eq("id", orderId);
+    .select("id,total,payment_status,paid_at,hitpay_payment_request_id")
+    .eq("id", orderId)
+    .single();
+
+  if (loadError || !order) {
+    return new Response(loadError?.message ?? "Order not found", { status: 404 });
+  }
+
+  const payloadAmount = numericField(payload, ["amount"]);
+  if (payloadAmount != null && Math.abs(payloadAmount - Number(order.total)) > 0.01) {
+    return new Response("Payment amount does not match the order total", { status: 400 });
+  }
+
+  if (order.payment_status === "paid") {
+    return Response.json({ ok: true, idempotent: true });
+  }
+
+  const update: Database["public"]["Tables"]["orders"]["Update"] = {
+    payment_provider: "hitpay",
+    payment_status: nextStatus,
+  };
+
+  if (requestId) update.hitpay_payment_request_id = requestId;
+  if (nextStatus === "paid") update.paid_at = order.paid_at ?? new Date().toISOString();
+  if (nextStatus !== "paid" && order.paid_at == null) update.paid_at = null;
+
+  const { error } = await supabaseAdmin.from("orders").update(update).eq("id", orderId);
 
   if (error) {
     return new Response(error.message, { status: 500 });

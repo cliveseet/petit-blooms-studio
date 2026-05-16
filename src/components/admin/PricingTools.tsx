@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMenuProducts } from "@/hooks/use-menu-products";
 import type { DiscountCodeRow, PricingAdjustmentRow } from "@/lib/promotions";
 import { cn } from "@/lib/utils";
+import { sanitizeCode, sanitizeText } from "@/lib/sanitize";
 
 type Scope = "all" | "products";
 type ConfirmDelete = { type: "discount" | "pricing"; id: string } | null;
@@ -61,13 +62,6 @@ const blankPricing: PricingDraft = {
   active: true,
 };
 
-function cleanCode(value: string) {
-  return value
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9_-]/g, "");
-}
-
 function productNames(slugs: string[], products: Array<{ slug: string; name: string }>) {
   if (slugs.length === 0) return "All products";
   return slugs
@@ -111,8 +105,9 @@ export function PricingTools() {
   }, []);
 
   const saveDiscount = async () => {
-    const code = cleanCode(discountDraft.code);
-    if (!code || !discountDraft.label.trim()) {
+    const code = sanitizeCode(discountDraft.code);
+    const label = sanitizeText(discountDraft.label, 120);
+    if (!code || !label) {
       toast.error("Add a code and a label first.");
       return;
     }
@@ -128,7 +123,7 @@ export function PricingTools() {
     setSaving("discount");
     const payload = {
       code,
-      label: discountDraft.label.trim(),
+      label,
       percent_off: discountDraft.percentOff,
       expires_at: discountDraft.expiresAt || null,
       scope: discountDraft.scope,
@@ -151,7 +146,8 @@ export function PricingTools() {
   };
 
   const savePricing = async () => {
-    if (!pricingDraft.label.trim()) {
+    const label = sanitizeText(pricingDraft.label, 120);
+    if (!label) {
       toast.error("Add a pricing adjustment label first.");
       return;
     }
@@ -174,7 +170,7 @@ export function PricingTools() {
 
     setSaving("pricing");
     const payload = {
-      label: pricingDraft.label.trim(),
+      label,
       percent_change: pricingDraft.percentChange,
       starts_on: pricingDraft.startsOn || null,
       ends_on: pricingDraft.endsOn || null,
@@ -249,9 +245,12 @@ export function PricingTools() {
             <Input
               value={discountDraft.code}
               onChange={(event) =>
-                setDiscountDraft((current) => ({ ...current, code: cleanCode(event.target.value) }))
+                setDiscountDraft((current) => ({
+                  ...current,
+                  code: sanitizeCode(event.target.value),
+                }))
               }
-              placeholder="BLOOM10"
+              placeholder="Discount code"
             />
           </Field>
           <Field label="Label">
@@ -260,7 +259,7 @@ export function PricingTools() {
               onChange={(event) =>
                 setDiscountDraft((current) => ({ ...current, label: event.target.value }))
               }
-              placeholder="Welcome offer"
+              placeholder="Short internal label"
             />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -373,7 +372,7 @@ export function PricingTools() {
               onChange={(event) =>
                 setPricingDraft((current) => ({ ...current, label: event.target.value }))
               }
-              placeholder="Mother's Day period"
+              placeholder="Adjustment label"
             />
           </Field>
           <Field label="Price change (%)">
